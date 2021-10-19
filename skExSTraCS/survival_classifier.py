@@ -26,7 +26,7 @@ class Classifier:
         self.matchCover = 0
         self.correctCover = 0
 
-    def initializeByCopy(self,toCopy,iterationCount):
+    def initializeByCopy(self,toCopy,iterationCount): #idk what this means 
         self.specifiedAttList = copy.deepcopy(toCopy.specifiedAttList)
         self.condition = copy.deepcopy(toCopy.condition)
         self.phenotype = copy.deepcopy(toCopy.phenotype)
@@ -36,11 +36,11 @@ class Classifier:
         self.fitness = toCopy.fitness
         self.accuracy = toCopy.accuracy
 
-    def initializeByCovering(self,model,setSize,state,phenotype):
+    def initializeByCovering(self,model,setSize,state,phenotype): 
         self.timeStampGA = model.iterationCount
         self.initTimeStamp = model.iterationCount
         self.aveMatchSetSize = setSize
-        self.phenotype = phenotype
+        self.phenotype = phenotype #this will have to change 
 
         toSpecify = random.randint(1, model.rule_specificity_limit)
         if model.doExpertKnowledge:
