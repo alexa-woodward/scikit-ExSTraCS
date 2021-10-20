@@ -37,13 +37,13 @@ class Classifier:
         self.accuracy = toCopy.accuracy
 
     def initializeByCovering(self,model,setSize,state,phenotype): 
-        self.timeStampGA = model.iterationCount
-        self.initTimeStamp = model.iterationCount
-        self.aveMatchSetSize = setSize
+        self.timeStampGA = model.iterationCount #the timestamp is set to what iteration we're on
+        self.initTimeStamp = model.iterationCount #same 
+        self.aveMatchSetSize = setSize #zero to start?
         self.phenotype = phenotype #this will have to change 
 
-        toSpecify = random.randint(1, model.rule_specificity_limit)
-        if model.doExpertKnowledge:
+        toSpecify = random.randint(1, model.rule_specificity_limit) #RSL gets set in the data_management.py...draws a random integer within the range 1 to RSL (i.e., how many attributes can be specified within a given rule).
+        if model.doExpertKnowledge: #if the model uses expert knowledge, do the following:
             i = 0
             while len(self.specifiedAttList) < toSpecify and i < model.env.formatData.numAttributes - 1:
                 target = model.EK.EKRank[i]
@@ -51,44 +51,44 @@ class Classifier:
                     self.specifiedAttList.append(target)
                     self.condition.append(self.buildMatch(model,target,state))
                 i += 1
-        else:
-            potentialSpec = random.sample(range(model.env.formatData.numAttributes),toSpecify)
-            for attRef in potentialSpec:
-                if state[attRef] != None:
-                    self.specifiedAttList.append(attRef)
-                    self.condition.append(self.buildMatch(model,attRef,state))
+        else: #if not, then:
+            potentialSpec = random.sample(range(model.env.formatData.numAttributes),toSpecify) #randomly sample "toSpecify" values from the range = the number of attributes
+            for attRef in potentialSpec: #for each attribute specified  
+                if state[attRef] != None: #if the state of that attribute is not none
+                    self.specifiedAttList.append(attRef) #append it to the specific attribute list  
+                    self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
 
-    def buildMatch(self,model,attRef,state):
-        attributeInfoType = model.env.formatData.attributeInfoType[attRef]
+    def buildMatch(self,model,attRef,state): 
+        attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type of attribute (discrete/continuous)
         if not (attributeInfoType):  # Discrete
             attributeInfoValue = model.env.formatData.attributeInfoDiscrete[attRef]
-        else:
+        else: #continuous
             attributeInfoValue = model.env.formatData.attributeInfoContinuous[attRef]
 
         if attributeInfoType: #Continuous Attribute
             attRange = attributeInfoValue[1] - attributeInfoValue[0]
-            rangeRadius = random.randint(25, 75) * 0.01 * attRange / 2.0  # Continuous initialization domain radius.
+            rangeRadius = random.randint(25, 75) * 0.01 * attRange / 2.0  # initialize a continuous domain radius.
             Low = state[attRef] - rangeRadius
             High = state[attRef] + rangeRadius
-            condList = [Low, High]
+            condList = [Low, High] #Condition list is the range of values from low to high
         else:
-            condList = state[attRef]
+            condList = state[attRef] #for a discrete attribute, the condition list is simply its state
         return condList
 
-    def updateEpochStatus(self,model):
+    def updateEpochStatus(self,model): #has the model iterated enough times? if not, keep going. If true, set epochComplete = True
         if not self.epochComplete and (model.iterationCount - self.initTimeStamp - 1) >= model.env.formatData.numTrainInstances:
             self.epochComplete = True
 
     def match(self, model, state):
-        for i in range(len(self.condition)):
-            specifiedIndex = self.specifiedAttList[i]
-            attributeInfoType = model.env.formatData.attributeInfoType[specifiedIndex]
+        for i in range(len(self.condition)): #for each attribute in the condition:
+            specifiedIndex = self.specifiedAttList[i] #get the index of that attribute 
+            attributeInfoType = model.env.formatData.attributeInfoType[specifiedIndex] #get whether it is discrete or continuous
             # Continuous
             if attributeInfoType:
                 instanceValue = state[specifiedIndex]
                 if instanceValue == None:
                     return False
-                elif self.condition[i][0] < instanceValue < self.condition[i][1]:
+                elif self.condition[i][0] < instanceValue < self.condition[i][1]: #not sure exactly what this is doing
                     pass
                 else:
                     return False
