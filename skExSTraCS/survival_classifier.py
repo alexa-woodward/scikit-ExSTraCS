@@ -55,7 +55,7 @@ class Classifier:
             potentialSpec = random.sample(range(model.env.formatData.numAttributes),toSpecify) #randomly sample "toSpecify" values from the range = the number of attributes
             for attRef in potentialSpec: #for each attribute specified  
                 if state[attRef] != None: #if the state of that attribute is not none
-                    self.specifiedAttList.append(attRef) #append it to the specific attribute list  
+                    self.specifiedAttList.append(attRef) #append the attribute (position?) to the specific attribute list  
                     self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
 
     def buildMatch(self,model,attRef,state): 
@@ -79,7 +79,7 @@ class Classifier:
         if not self.epochComplete and (model.iterationCount - self.initTimeStamp - 1) >= model.env.formatData.numTrainInstances:
             self.epochComplete = True
 
-    def match(self, model, state):
+    def match(self, model, state): #this funtion matches attributes (from instances) to the conditions (from a rule)
         for i in range(len(self.condition)): #for each attribute in the condition:
             specifiedIndex = self.specifiedAttList[i] #get the index of that attribute 
             attributeInfoType = model.env.formatData.attributeInfoType[specifiedIndex] #get whether it is discrete or continuous
@@ -94,15 +94,15 @@ class Classifier:
                     return False
 
             # Discrete
-            else:
-                stateRep = state[specifiedIndex]
-                if stateRep == self.condition[i]:
+            else: #if attribute is discrete
+                stateRep = state[specifiedIndex] #set its state (value) at the specified index
+                if stateRep == self.condition[i]: #if the state (value) is the same as the condition at position i, pass and return true
                     pass
-                elif stateRep == None:
+                elif stateRep == None: #if the state is none or is not the same as condition [i], return false
                     return False
                 else:
                     return False
-        return True
+        return True 
 
     def equals(self,cl):
         if cl.phenotype == self.phenotype and len(cl.specifiedAttList) == len(self.specifiedAttList):
