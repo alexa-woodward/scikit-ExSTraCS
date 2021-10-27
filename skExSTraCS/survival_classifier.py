@@ -2,7 +2,7 @@ import random
 import copy
 import numpy as np
 
-class Classifier:
+class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     def __init__(self,model):
         self.specifiedAttList = []
         self.condition = []
@@ -23,7 +23,7 @@ class Classifier:
 
         self.matchCount = 0
         self.correctCount = 0
-        self.matchCover = 0
+        self.matchCover = 0 #what are these? 
         self.correctCover = 0
 
     def initializeByCopy(self,toCopy,iterationCount): #idk what this means 
@@ -114,20 +114,20 @@ class Classifier:
                     tempIndex = self.specifiedAttList.index(cl.specifiedAttList[i]) #the following checks to see if the conditions also match 
                     if not (cl.condition[i] == self.condition[tempIndex]):
                         return False #if the don't all match, return false
-                return True #if they do all match, return true 
+                return True #if they do all match, return true (I assume somewhere this would update the numerosity)
         return False #if the phenotypes and lengths of the specified attribute lists of two classifiers don't match, return false
 
-    def updateExperience(self):
+    def updateExperience(self): #add 1 to either the matchcount or the matchcover, depending on what was needed 
         self.matchCount += 1
         if self.epochComplete:  # Once epoch Completed, number of matches for a unique rule will not change, so do repeat calculation
             pass
         else:
             self.matchCover += 1
 
-    def updateMatchSetSize(self, model,matchSetSize):
-        if self.matchCount < 1.0 / model.beta:
-            self.aveMatchSetSize = (self.aveMatchSetSize * (self.matchCount-1)+ matchSetSize) / float(self.matchCount)
-        else:
+    def updateMatchSetSize(self, model,matchSetSize):  #update the match set size. "beta" is set at 0.2, a learning parameter used in calculating the average correct set size
+        if self.matchCount < 1.0 / model.beta: # if the match count is less than 5
+            self.aveMatchSetSize = (self.aveMatchSetSize * (self.matchCount-1)+ matchSetSize) / float(self.matchCount) #update the average to...
+        else: #if its not less than 5,
             self.aveMatchSetSize = self.aveMatchSetSize + model.beta * (matchSetSize - self.aveMatchSetSize)
 
     def updateCorrect(self):
@@ -144,8 +144,8 @@ class Classifier:
         self.fitness = pow(self.accuracy, model.nu)
 
     def updateNumerosity(self, num):
-        """ Alters the numberosity of the classifier.  Notice that num can be negative! """
-        self.numerosity += num
+        """ Alters the numerosity of the classifier.  Notice that num can be negative! """
+        self.numerosity += num #but where does num come from??
 
     def isSubsumer(self, model):
         if self.matchCount > model.theta_sub and self.accuracy > model.acc_sub:
