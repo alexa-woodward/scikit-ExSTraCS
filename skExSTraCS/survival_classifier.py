@@ -41,6 +41,7 @@ class Classifier:
         self.initTimeStamp = model.iterationCount #same 
         self.aveMatchSetSize = setSize #zero to start?
         self.phenotype = phenotype #this will have to change 
+        self.EvalTime = EvalTime #will need to set the evaluation time for covering , will need to choose this somewhere in the data_management script
 
         toSpecify = random.randint(1, model.rule_specificity_limit) #RSL gets set in the data_management.py...draws a random integer within the range 1 to RSL (i.e., how many attributes can be specified within a given rule).
         if model.doExpertKnowledge: #if the model uses expert knowledge, do the following:
@@ -104,17 +105,17 @@ class Classifier:
                     return False
         return True 
 
-    def equals(self,cl):
-        if cl.phenotype == self.phenotype and len(cl.specifiedAttList) == len(self.specifiedAttList):
-            clRefs = sorted(cl.specifiedAttList)
-            selfRefs = sorted(self.specifiedAttList)
-            if clRefs == selfRefs:
-                for i in range(len(cl.specifiedAttList)):
-                    tempIndex = self.specifiedAttList.index(cl.specifiedAttList[i])
+    def equals(self,cl): #for each rule, checks to see if the other rules are the sam
+        if cl.phenotype == self.phenotype and len(cl.specifiedAttList) == len(self.specifiedAttList): #if the phenotypes are the same and the list of attributes are the same length, check the following...
+            clRefs = sorted(cl.specifiedAttList) #sort the attribute indexes for the classifier
+            selfRefs = sorted(self.specifiedAttList) #sort the attribute indexes
+            if clRefs == selfRefs: #if they are the same, then...
+                for i in range(len(cl.specifiedAttList)): #for each attribute in the classifier 
+                    tempIndex = self.specifiedAttList.index(cl.specifiedAttList[i]) #the following checks to see if the conditions also match 
                     if not (cl.condition[i] == self.condition[tempIndex]):
-                        return False
-                return True
-        return False
+                        return False #if the don't all match, return false
+                return True #if they do all match, return true 
+        return False #if the phenotypes and lengths of the specified attribute lists of two classifiers don't match, return false
 
     def updateExperience(self):
         self.matchCount += 1
