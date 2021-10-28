@@ -147,18 +147,18 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         """ Alters the numerosity of the classifier.  Notice that num can be negative! """
         self.numerosity += num #but where does num come from??
 
-    def isSubsumer(self, model):
-        if self.matchCount > model.theta_sub and self.accuracy > model.acc_sub:
+    def isSubsumer(self, model): #is the match count and accuracy of a more general rule just as good as the more specific one? If so,  return true
+        if self.matchCount > model.theta_sub and self.accuracy > model.acc_sub: #if the match count is greater than the theta_sub (subsumption experience threshold, default = 20) and the accuracy is greater than the acc_sub (default = 0.99), return true
             return True
         return False
 
-    def subsumes(self,model,cl):
+    def subsumes(self,model,cl): 
         return cl.phenotype == self.phenotype and self.isSubsumer(model) and self.isMoreGeneral(model,cl)
 
-    def isMoreGeneral(self,model, cl):
-        if len(self.specifiedAttList) >= len(cl.specifiedAttList):
+    def isMoreGeneral(self,model, cl): #
+        if len(self.specifiedAttList) >= len(cl.specifiedAttList): #if the length of the specified attribute list for one classifier is greater than or equal to the that of the other, return false (classifier is more specific)
             return False
-        for i in range(len(self.specifiedAttList)):
+        for i in range(len(self.specifiedAttList)): #check if there are attributes specified in one that are not specified in the other, return false
             attributeInfoType = model.env.formatData.attributeInfoType[self.specifiedAttList[i]]
             if self.specifiedAttList[i] not in cl.specifiedAttList:
                 return False
@@ -170,33 +170,33 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     return False
                 if self.condition[i][1] > cl.condition[otherRef][1]:
                     return False
-        return True
+        return True #otherwise, return true 
 
-    def updateTimeStamp(self, ts):
+    def updateTimeStamp(self, ts): #where does ts come from?
         """ Sets the time stamp of the classifier. """
         self.timeStampGA = ts
 
-    def uniformCrossover(self,model,cl):
-        p_self_specifiedAttList = copy.deepcopy(self.specifiedAttList)
-        p_cl_specifiedAttList = copy.deepcopy(cl.specifiedAttList)
+    def uniformCrossover(self,model,cl): #define the uniform crossover function 
+        p_self_specifiedAttList = copy.deepcopy(self.specifiedAttList) #A deep copy constructs a new compound object and then, recursively, inserts copies into it of the objects found in the original.
+        p_cl_specifiedAttList = copy.deepcopy(cl.specifiedAttList) #deep copy the attribute list of two parent rules 
 
-        useAT = model.do_attribute_feedback and random.random() < model.AT.percent
+        useAT = model.do_attribute_feedback and random.random() < model.AT.percent #do_attribute_feedback defaults to true - not sure where AT.percent comes from
 
-        comboAttList = []
-        for i in p_self_specifiedAttList:
-            comboAttList.append(i)
-        for i in p_cl_specifiedAttList:
-            if i not in comboAttList:
-                comboAttList.append(i)
+        comboAttList = [] #create a combined attribute list 
+        for i in p_self_specifiedAttList: #for each in the specified attribute list
+            comboAttList.append(i) #append each to the combo list 
+        for i in p_cl_specifiedAttList: #for each in the other list
+            if i not in comboAttList: #if its not already in the combo list
+                comboAttList.append(i) #append it to the combo list
             elif not model.env.formatData.attributeInfoType[i]:  # Attribute specified in both parents, and the attribute is discrete (then no reason to cross over)
                 comboAttList.remove(i)
-        comboAttList.sort()
+        comboAttList.sort() #sort the combined list 
 
         changed = False
-        for attRef in comboAttList:
-            attributeInfoType = model.env.formatData.attributeInfoType[attRef]
-            if useAT:
-                probability = model.AT.getTrackProb()[attRef]
+        for attRef in comboAttList: #for each attribute in the combo list
+            attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type (discrete/continuous)
+            if useAT: #if AT is true (default is)
+                probability = model.AT.getTrackProb()[attRef] #set the probability (see attribute_tracking.py)
             else:
                 probability = 0.5
 
