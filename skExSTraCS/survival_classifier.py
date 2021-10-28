@@ -116,6 +116,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                         return False #if the don't all match, return false
                 return True #if they do all match, return true (I assume somewhere this would update the numerosity)
         return False #if the phenotypes and lengths of the specified attribute lists of two classifiers don't match, return false
+    
+    ## All the rest of this stuff would probably stay exactly the same 
 
     def updateExperience(self): #add 1 to either the matchcount or the matchcover, depending on what was needed 
         self.matchCount += 1
