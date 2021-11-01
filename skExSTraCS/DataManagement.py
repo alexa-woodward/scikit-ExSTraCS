@@ -44,7 +44,7 @@ class DataManagement:
 
         self.trainFormatted = self.formatData(dataFeatures, dataPhenotypes, model)  # The only np array
 
-    def discriminateClasses(self,phenotypes):
+    def discriminateClasses(self,phenotypes): #counts how many of each class are in the dataset?
         currentPhenotypeIndex = 0
         classCount = {}
         while (currentPhenotypeIndex < self.numTrainInstances):
@@ -65,20 +65,20 @@ class DataManagement:
             self.classPredictionWeights[eachClass] = 1 - (self.classPredictionWeights[eachClass]/total)
 
     def discriminateAttributes(self,features,model):
-        for att in range(self.numAttributes):
-            attIsDiscrete = True
-            if self.isDefault:
+        for att in range(self.numAttributes): #for eaach attribute 
+            attIsDiscrete = True #set is discrete to true (what if it isn't?)
+            if self.isDefault: # if the discrete atttribute limit is an integer
                 currentInstanceIndex = 0
                 stateDict = {}
                 while attIsDiscrete and len(list(stateDict.keys())) <= model.discrete_attribute_limit and currentInstanceIndex < self.numTrainInstances:
-                    target = features[currentInstanceIndex,att]
-                    if target in list(stateDict.keys()):
+                    target = features[currentInstanceIndex,att] #retrieve the index of the attribute and the attribute value
+                    if target in list(stateDict.keys()): #if the attribute is present in the stateDict key (of a key value pair), add 1 (to the value)
                         stateDict[target] += 1
-                    elif np.isnan(target):
+                    elif np.isnan(target): #if it is missing, pass
                         pass
                     else:
-                        stateDict[target] = 1
-                    currentInstanceIndex+=1
+                        stateDict[target] = 1 #if it isn't already present, add it to stateDict.key and add 1 to the value. 
+                    currentInstanceIndex+=1 #jump to the next index
 
                 if len(list(stateDict.keys())) > model.discrete_attribute_limit:
                     attIsDiscrete = False
