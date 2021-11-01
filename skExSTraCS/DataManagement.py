@@ -103,7 +103,7 @@ class DataManagement:
         for currentFeatureIndexInAttributeInfo in range(self.numAttributes): #for each feature index in attribute info
             for currentInstanceIndex in range(self.numTrainInstances): #for each instance in the environment 
                 target = features[currentInstanceIndex,currentFeatureIndexInAttributeInfo] #set the target as the instance index and the attribute info [instance1, attribute1]
-                if not self.attributeInfoType[currentFeatureIndexInAttributeInfo]:#if attribute is discrete (recall that false = continuous and true = discrete for attributeInfoType)
+                if not self.attributeInfoType[currentFeatureIndexInAttributeInfo]:#if attribute is discrete (recall that false = discrete and true = continuous for attributeInfoType)
                     if target in self.attributeInfoDiscrete[currentFeatureIndexInAttributeInfo].distinctValues or np.isnan(target):
                         pass
                     else:
