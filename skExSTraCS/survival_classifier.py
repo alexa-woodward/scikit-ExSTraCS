@@ -66,7 +66,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         else: #continuous
             attributeInfoValue = model.env.formatData.attributeInfoContinuous[attRef]
 
-        if attributeInfoType: #Continuous Attribute
+        if attributeInfoType: #Continuous Attribute (false = continuous)
             attRange = attributeInfoValue[1] - attributeInfoValue[0]
             rangeRadius = random.randint(25, 75) * 0.01 * attRange / 2.0  # initialize a continuous domain radius.
             Low = state[attRef] - rangeRadius
