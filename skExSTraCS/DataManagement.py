@@ -64,7 +64,7 @@ class DataManagement:
         for eachClass in list(classCount.keys()):
             self.classPredictionWeights[eachClass] = 1 - (self.classPredictionWeights[eachClass]/total)
 
-    def discriminateAttributes(self,features,model):
+    def discriminateAttributes(self,features,model): #create a dictionary with keys = attribute index + state and value = # of times it appears. 
         for att in range(self.numAttributes): #for eaach attribute 
             attIsDiscrete = True #set is discrete to true (what if it isn't?)
             if self.isDefault: # if the discrete atttribute limit is an integer
@@ -80,15 +80,15 @@ class DataManagement:
                         stateDict[target] = 1 #if it isn't already present, add it to stateDict.key and add 1 to the value. 
                     currentInstanceIndex+=1 #jump to the next index
 
-                if len(list(stateDict.keys())) > model.discrete_attribute_limit:
+                if len(list(stateDict.keys())) > model.discrete_attribute_limit: #if the length of the list of keys in stateDict is larger than the discrete attribute limit, set attisdisrete to false
                     attIsDiscrete = False
-            elif model.discrete_attribute_limit == "c":
-                if att in model.specified_attributes:
-                    attIsDiscrete = False
-                else:
+            elif model.discrete_attribute_limit == "c": #if the discrete attribute limit is "c" (see user guide:Multipurpose param. If it is a nonnegative integer, discrete_attribute_limit determines the threshold that determines if an attribute will be treated as a continuous or discrete attribute. For example, if discrete_attribute_limit == 10, if an attribute has more than 10 unique values in the dataset, the attribute will be continuous. If the attribute has 10 or less unique values, it will be discrete. Alternatively, discrete_attribute_limit can take the value of "c" or "d". See next param for this.)
+                if att in model.specified_attributes: #and if att is in the specified attibutes from the model (If discrete_attribute_limit == "c", attributes specified by index in this param will be continuous and the rest will be discrete. If "d", attributes specified by index in this param will be discrete and the rest will be continuous)
+                    attIsDiscrete = False #set attIsDiscrete to False
+                else: #if it is not in the specified attributes, set it to true.
                     attIsDiscrete = True
-            elif model.discrete_attribute_limit == "d":
-                if att in model.specified_attributes:
+            elif model.discrete_attribute_limit == "d": #if the discrete attribute limit is "d" 
+                if att in model.specified_attributes: 
                     attIsDiscrete = True
                 else:
                     attIsDiscrete = False
