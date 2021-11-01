@@ -64,14 +64,14 @@ class DataManagement:
         for eachClass in list(classCount.keys()):
             self.classPredictionWeights[eachClass] = 1 - (self.classPredictionWeights[eachClass]/total)
 
-    def discriminateAttributes(self,features,model): #create a dictionary with keys = attribute index + state and value = # of times it appears. 
+    def discriminateAttributes(self,features,model): #create a dictionary with key = state and value = # of times it appears. 
         for att in range(self.numAttributes): #for eaach attribute 
             attIsDiscrete = True #set is discrete to true (what if it isn't?)
             if self.isDefault: # if the discrete atttribute limit is an integer
                 currentInstanceIndex = 0
                 stateDict = {}
                 while attIsDiscrete and len(list(stateDict.keys())) <= model.discrete_attribute_limit and currentInstanceIndex < self.numTrainInstances:
-                    target = features[currentInstanceIndex,att] #retrieve the index of the attribute and the attribute value
+                    target = features[currentInstanceIndex,att] #retrieve the attribute value (features is an np array)
                     if target in list(stateDict.keys()): #if the attribute is present in the stateDict key (of a key value pair), add 1 (to the value)
                         stateDict[target] += 1
                     elif np.isnan(target): #if it is missing, pass
@@ -102,19 +102,19 @@ class DataManagement:
     def characterizeAttributes(self,features,model):
         for currentFeatureIndexInAttributeInfo in range(self.numAttributes): #for each feature index in attribute info
             for currentInstanceIndex in range(self.numTrainInstances): #for each instance in the environment 
-                target = features[currentInstanceIndex,currentFeatureIndexInAttributeInfo] #set the target as the instance index and the attribute info [instance1, attribute1]
+                target = features[currentInstanceIndex,currentFeatureIndexInAttributeInfo] #set the target as the attribute info (value)
                 if not self.attributeInfoType[currentFeatureIndexInAttributeInfo]:#if attribute is discrete (recall that false = discrete and true = continuous for attributeInfoType)
-                    if target in self.attributeInfoDiscrete[currentFeatureIndexInAttributeInfo].distinctValues or np.isnan(target):
+                    if target in self.attributeInfoDiscrete[currentFeatureIndexInAttributeInfo].distinctValues or np.isnan(target): #if the value is missing or is already in the list of distict values, the pass
                         pass
                     else:
-                        self.attributeInfoDiscrete[currentFeatureIndexInAttributeInfo].distinctValues.append(target)
-                        self.averageStateCount += 1
-                else: #if attribute is continuous
-                    if np.isnan(target):
+                        self.attributeInfoDiscrete[currentFeatureIndexInAttributeInfo].distinctValues.append(target) #otherwise append that value to the distinct values list 
+                        self.averageStateCount += 1 #increase the state count by 1
+                else: #if attribute is continuous, aka if "true"
+                    if np.isnan(target): #and the value is missing, pass
                         pass
-                    elif float(target) > self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][1]:
+                    elif float(target) > self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][1]: #if the target value is greater than -inf, set the SECOND list item of attributeInfoContinuous to "target" (the value of that attribute)
                         self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][1] = float(target)
-                    elif float(target) < self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][0]:
+                    elif float(target) < self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][0]: #if the target value is less than inf, set the FIRST list item of attributeInfoContinuous to  "target" (the value of that attribute)
                         self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][0] = float(target)
                     else:
                         pass
