@@ -89,7 +89,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 instanceValue = state[specifiedIndex]
                 if instanceValue == None:
                     return False
-                elif self.condition[i][0] < instanceValue < self.condition[i][1]: #not sure exactly what this is doing
+                elif self.condition[i][0] < instanceValue < self.condition[i][1]: #making sure the instance value falls within the range?
                     pass
                 else:
                     return False
