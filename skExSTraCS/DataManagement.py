@@ -9,7 +9,7 @@ class DataManagement:
         self.attributeInfoContinuous = [[np.inf,-np.inf] for _ in range(self.numAttributes)] #stores continuous ranges and NaN otherwise
         self.attributeInfoDiscrete = [0] * self.numAttributes  # stores arrays of discrete values or NaN otherwise.
         for i in range(0, self.numAttributes):
-            self.attributeInfoDiscrete[i] = AttributeInfoDiscreteElement()
+            self.attributeInfoDiscrete[i] = AttributeInfoDiscreteElement() #list of distinct values (see the last function in this script)
 
         # About Phenotypes
         self.discretePhenotype = True  # Is the Class/Phenotype Discrete? (False = Continuous)
