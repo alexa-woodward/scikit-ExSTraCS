@@ -60,14 +60,14 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
 
     def buildMatch(self,model,attRef,state): 
-        attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type of attribute (discrete/continuous)
+        attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type of attribute (discrete/continuous) (see lines #96-100 of data_mangement.py)
         if not (attributeInfoType):  # Discrete
-            attributeInfoValue = model.env.formatData.attributeInfoDiscrete[attRef]
+            attributeInfoValue = model.env.formatData.attributeInfoDiscrete[attRef] #if not "true", set the attributeInfoValue to...
         else: #continuous
             attributeInfoValue = model.env.formatData.attributeInfoContinuous[attRef]
 
-        if attributeInfoType: #Continuous Attribute (false = continuous)
-            attRange = attributeInfoValue[1] - attributeInfoValue[0]
+        if attributeInfoType: #Continuous Attribute (true = continuous) (i.e., if TRUE:...)
+            attRange = attributeInfoValue[1] - attributeInfoValue[0] #ughhh it seemes like this numbers are the same ACKKKK
             rangeRadius = random.randint(25, 75) * 0.01 * attRange / 2.0  # initialize a continuous domain radius.
             Low = state[attRef] - rangeRadius
             High = state[attRef] + rangeRadius
