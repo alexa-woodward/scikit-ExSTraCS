@@ -17,6 +17,8 @@ class DataManagement:
         self.discretePhenotype = True  # Is the Class/Phenotype Discrete? (False = Continuous)
         self.phenotypeList = []  # Stores all possible discrete phenotype states/classes or maximum and minimum values for a continuous phenotype
         self.phenotypeRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
+        #self.phenSD = None #do we need this?
+        #self.missingEndpointList = [] #??
         self.isDefault = True  # Is discrete attribute limit an int or string
         try:
             int(model.discrete_attribute_limit)
@@ -123,6 +125,24 @@ class DataManagement:
             if self.attributeInfoType[currentFeatureIndexInAttributeInfo]: #if attribute is continuous
                 self.averageStateCount += 2
         self.averageStateCount = self.averageStateCount/self.numAttributes
+   
+#Adding on 11/2 from exstracs_data.py from the continuous endpoint implementation....this should be similar to how we characterize continuous attributes
+# Determine the range of phenotype values (for continuous endpoints) ----------------------------------------
+    def characterizePhenotype(self,phenotypes,model):
+        contPhenoList = [] #create an empty list 
+        
+
+#------------------------------------------------------------------------------------------------------------
+
+#Adding on 11/2 from from exstracs_data.py from the continuous endpoint implementation...creating an "error" for the continuous endpoints
+# Calculate the error of the continuous phenotype scores-----------------------------------------------------
+    def calcErr(self,contPhenoList):
+        #
+        #
+        #
+        #
+#------------------------------------------------------------------------------------------------------------ 
+        
 
     def formatData(self,features,phenotypes,model):
         formatted = np.insert(features,self.numAttributes,phenotypes,1) #Combines features and phenotypes into one array
