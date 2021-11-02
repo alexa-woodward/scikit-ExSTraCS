@@ -111,11 +111,11 @@ class DataManagement:
                         self.averageStateCount += 1 #increase the state count by 1
                 else: #if attribute is continuous, aka if "true"
                     if np.isnan(target): #and the value is missing, pass
-                        pass
-                    elif float(target) > self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][1]: #if the target value is greater than -inf, set the SECOND list item of attributeInfoContinuous to "target" (the value of that attribute)
-                        self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][1] = float(target)
-                    elif float(target) < self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][0]: #if the target value is less than inf, set the FIRST list item of attributeInfoContinuous to  "target" (the value of that attribute)
-                        self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][0] = float(target)
+                        pass #FOR THE NEXT LINES 115-118: Note these happen for each attribute across EACH instance....effectively updating the RANGE of the continuous attribute as it encounters all the instances
+                    elif float(target) > self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][1]: #if the target value is greater than -inf
+                        self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][1] = float(target) #set the SECOND list item of attributeInfoContinuous to "target" (the value of that attribute)
+                    elif float(target) < self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][0]: #if the target value is less than inf
+                        self.attributeInfoContinuous[currentFeatureIndexInAttributeInfo][0] = float(target) #set the FIRST list item of attributeInfoContinuous to  "target" (the value of that attribute)
                     else:
                         pass
             if self.attributeInfoType[currentFeatureIndexInAttributeInfo]: #if attribute is continuous
