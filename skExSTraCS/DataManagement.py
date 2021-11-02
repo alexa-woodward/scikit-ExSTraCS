@@ -48,7 +48,7 @@ class DataManagement:
 
         self.trainFormatted = self.formatData(dataFeatures, dataPhenotypes, model)  # The only np array
 
-    def discriminateClasses(self,phenotypes): #counts how many of each class are in the dataset?
+    def discriminateClasses(self,phenotypes): #counts how many of each class are in the dataset? NEED TO UPDATE THIS FOR CONTINUOUS PHENOTYOES
         currentPhenotypeIndex = 0
         classCount = {}
         while (currentPhenotypeIndex < self.numTrainInstances):
@@ -128,8 +128,22 @@ class DataManagement:
    
 #Adding on 11/2 from exstracs_data.py from the continuous endpoint implementation....this should be similar to how we characterize continuous attributes
 # Determine the range of phenotype values (for continuous endpoints) ----------------------------------------
-    def characterizePhenotype(self,phenotypes,model):
+    def characterizePhenotype(self,phenotypes,model): #intake phenotypes or phenotypeList?
         contPhenoList = [] #create an empty list 
+        for currentInstanceIndex in range(len(phenotypes)): #does it make sense to use "currentInstanceIndex" here?
+            target = phenotypeList[currentInstanceIndex][self.phenotypeRef]
+            contPhenoList.append(target)
+            #Find Minimum and Maximum values for the continuous phenotype so we know the range.
+            if target == cons.labelMissingData:
+                pass
+            elif float(target) > self.phenotypeList[1]:  
+                self.phenotypeList[1] = float(target)
+            elif float(target) < self.phenotypeList[0]:
+                self.phenotypeList[0] = float(target)
+            else:
+                pass
+        self.phenSD = self.calcSD(contPhenoList)
+        self.phenotypeRange = self.phenotypeList[1] - self.phenotypeList[0]
         
 
 #------------------------------------------------------------------------------------------------------------
