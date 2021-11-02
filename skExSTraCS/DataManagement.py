@@ -131,10 +131,10 @@ class DataManagement:
     def characterizePhenotype(self,phenotypes,model): #intake phenotypes or phenotypeList?
         contPhenoList = [] #create an empty list 
         for currentInstanceIndex in range(len(phenotypes)): #does it make sense to use "currentInstanceIndex" here?
-            target = phenotypeList[currentInstanceIndex][self.phenotypeRef]
+            target = phenotypeList[currentInstanceIndex][self.phenotypeRef] #what is phenotypeRef?
             contPhenoList.append(target)
             #Find Minimum and Maximum values for the continuous phenotype so we know the range.
-            if target == cons.labelMissingData:
+            if np.isnan(target): #if it is missing, pass
                 pass
             elif float(target) > self.phenotypeList[1]:  
                 self.phenotypeList[1] = float(target)
