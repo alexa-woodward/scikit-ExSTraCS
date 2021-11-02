@@ -1,5 +1,7 @@
+# Import required moduldes------------------------------------
 import numpy as np
 import math
+#-------------------------------------------------------------
 
 class DataManagement:
     def __init__(self,dataFeatures,dataPhenotypes,model):
