@@ -64,12 +64,12 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         if not (attributeInfoType):  # Discrete
             attributeInfoValue = model.env.formatData.attributeInfoDiscrete[attRef] #if not "true", set the attributeInfoValue to...
         else: #continuous
-            attributeInfoValue = model.env.formatData.attributeInfoContinuous[attRef]
+            attributeInfoValue = model.env.formatData.attributeInfoContinuous[attRef] #pulls from attributeInfoContinous (a list of lists I think, or a np array)...see data_management.py
 
         if attributeInfoType: #Continuous Attribute (true = continuous) (i.e., if TRUE:...)
-            attRange = attributeInfoValue[1] - attributeInfoValue[0] #ughhh it seemes like this numbers are the same ACKKKK
-            rangeRadius = random.randint(25, 75) * 0.01 * attRange / 2.0  # initialize a continuous domain radius.
-            Low = state[attRef] - rangeRadius
+            attRange = attributeInfoValue[1] - attributeInfoValue[0] #okkkk figured this out. the infovalues form from attributeInfoContinuous which is (a np array I think) of max and min values of each attribute across all the instances. So index 1 minus index 0 of "attributeInfoValue" gives the range 
+            rangeRadius = random.randint(25, 75) * 0.01 * attRange / 2.0  # initialize a continuous domain radius. draw a random integer between 25 and 75 (why these numbers?), multiply by 0.01, by the attRange, and divide by 2
+            Low = state[attRef] - rangeRadius 
             High = state[attRef] + rangeRadius
             condList = [Low, High] #Condition list is the range of values from low to high
         else:
