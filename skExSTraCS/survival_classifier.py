@@ -36,7 +36,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.fitness = toCopy.fitness
         self.accuracy = toCopy.accuracy
 
-    def initializeByCovering(self,model,setSize,state,phenotype): 
+    def initializeByCovering(self,model,setSize,state,phenotype): #will need to add a way to do this for the continuous outcome!
         self.timeStampGA = model.iterationCount #the timestamp is set to what iteration we're on
         self.initTimeStamp = model.iterationCount #same 
         self.aveMatchSetSize = setSize #zero to start?
@@ -58,6 +58,62 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 if state[attRef] != None: #if the state of that attribute is not none
                     self.specifiedAttList.append(attRef) #append the attribute (position?) to the specific attribute list  
                     self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
+                    
+    ### THE FUNCTION BELOW COPIED FROM [here](https://github.com/alexa-woodward/scikit-ExSTraCS/blob/master/continuous_endpoint_ExSTraCS/exstracs_classifier.py) on 11/15...provides strategy for covering with continuous endpoint. Will need to update how this is done based on whether the event status is 1 or 0.                
+    #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # CLASSIFIER CONSTRUCTION METHODS
+    #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------     
+    def classifierCovering(self, setSize, exploreIter, state, phenotype):
+        """ Makes a new classifier when the covering mechanism is triggered.  The new classifier will match the current training instance. 
+        Covering will NOT produce a default rule (i.e. a rule with a completely general condition). """
+        #Initialize new classifier parameters----------
+        self.timeStampGA = exploreIter
+        self.initTimeStamp = exploreIter
+        self.aveMatchSetSize = setSize
+        self.origin = 'Covering'  #temporary code 
+        dataInfo = cons.env.formatData
+        #-------------------------------------------------------
+        # DISCRETE PHENOTYPE
+        #-------------------------------------------------------
+        if dataInfo.discretePhenotype: 
+            self.phenotype = phenotype
+        #-------------------------------------------------------
+        # CONTINUOUS PHENOTYPE
+        #-------------------------------------------------------
+        else: #ContinuousCode #########################
+            phenotypeRange = dataInfo.phenotypeList[1] - dataInfo.phenotypeList[0]
+            rangeRadius = random.randint(25,75)*0.01*phenotypeRange / 2.0 #Continuous initialization domain radius.
+            Low = float(phenotype) - rangeRadius
+            High = float(phenotype) + rangeRadius
+            self.phenotype = [Low,High] #ALKR Representation, Initialization centered around training instance  with a range between 25 and 75% of the domain size.      
+   
+
+        #-------------------------------------------------------
+        # GENERATE MATCHING CONDITION - With Expert Knowledge Weights
+        #-------------------------------------------------------     
+        #DETERMINISTIC STRATEGY
+        if cons.useExpertKnowledge:  
+            toSpecify = random.randint(1,dataInfo.specLimit) # Pick number of attributes to specify
+            i = 0
+
+            while len(self.specifiedAttList) < toSpecify:
+                target = cons.EK.EKRank[i]
+                if state[target] != cons.labelMissingData: # If one of the randomly selected specified attributes turns out to be a missing data point, generalize instead.
+                    self.specifiedAttList.append(target)
+                    self.condition.append(self.buildMatch(target, state)) 
+                i += 1
+                
+        #-------------------------------------------------------
+        # GENERATE MATCHING CONDITION - Without Expert Knowledge Weights
+        #-------------------------------------------------------
+        else: 
+            toSpecify = random.randint(1,dataInfo.specLimit) # Pick number of attributes to specify
+            potentialSpec = random.sample(range(dataInfo.numAttributes),toSpecify) # List of possible specified attributes
+            for attRef in potentialSpec:
+                if state[attRef] != cons.labelMissingData: # If one of the randomly selected specified attributes turns out to be a missing data point, generalize instead.
+                    self.specifiedAttList.append(attRef)
+                    self.condition.append(self.buildMatch(attRef, state))
+     
 
     def buildMatch(self,model,attRef,state): 
         attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type of attribute (discrete/continuous) (see lines #96-100 of data_mangement.py)
