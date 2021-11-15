@@ -59,7 +59,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     self.specifiedAttList.append(attRef) #append the attribute (position?) to the specific attribute list  
                     self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
                     
-    ### THE FUNCTION BELOW COPIED FROM [here](https://github.com/alexa-woodward/scikit-ExSTraCS/blob/master/continuous_endpoint_ExSTraCS/exstracs_classifier.py) on 11/15...provides strategy for covering with continuous endpoint. Will need to update how this is done based on whether the event status is 1 or 0.                
+    ### THE FUNCTION BELOW COPIED FROM [here](https://github.com/alexa-woodward/scikit-ExSTraCS/blob/master/continuous_endpoint_ExSTraCS/exstracs_classifier.py) on 11/15, will delete later...provides strategy for covering with continuous endpoint. Will need to update how this is done based on whether the event status is 1 or 0.                
     #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # CLASSIFIER CONSTRUCTION METHODS
     #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------     
@@ -113,6 +113,54 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 if state[attRef] != cons.labelMissingData: # If one of the randomly selected specified attributes turns out to be a missing data point, generalize instead.
                     self.specifiedAttList.append(attRef)
                     self.condition.append(self.buildMatch(attRef, state))
+#--------------------------------------------------------------------------------------------- 
+# New covering function for survival outcomes - added 11/15
+#---------------------------------------------------------------------------------------------
+                    
+    def initializeByCovering(self,model,setSize,state,event,eventStatus): #will need to add a way to do this for the continuous outcome!
+    self.timeStampGA = model.iterationCount #the timestamp is set to what iteration we're on
+    self.initTimeStamp = model.iterationCount #same
+    self.aveMatchSetSize = setSize #zero to start?
+    #self.event = event #this will have to change
+    self.EvalTime = EvalTime #will need to set the evaluation time for covering , will need to choose this somewhere in the data_management script 
+    self.discreteEvent = False
+    
+    toSpecify = random.randint(1, model.rule_specificity_limit) #RSL gets set in the data_management.py...draws a random integer within the range 1 to RSL (i.e., how many attributes can be specified within a given rule).
+    if model.doExpertKnowledge: #if the model uses expert knowledge, do the following:
+        i = 0
+        while len(self.specifiedAttList) < toSpecify and i < model.env.formatData.numAttributes - 1:
+            target = model.EK.EKRank[i]
+            if state[target] != None:
+                self.specifiedAttList.append(target)
+                self.condition.append(self.buildMatch(model,target,state))
+            i += 1
+    else: #if not, then:
+        potentialSpec = random.sample(range(model.env.formatData.numAttributes),toSpecify) #randomly sample "toSpecify" values from the range = the number of attributes
+        for attRef in potentialSpec: #for each attribute specified
+            if state[attRef] != None: #if the state of that attribute is not none
+                self.specifiedAttList.append(attRef) #append the attribute (position?) to the specific attribute list
+                self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
+#----------------------------------------------------------------------------------------------------------------------------
+# Addition of continuous event range and event status 
+#----------------------------------------------------------------------------------------------------------------------------
+    if self.discreteEvent: #if the event is discrete, set event equal to that value (may not need this)
+        self.event = event
+        
+    else: #if the event is continuous, 
+        if self.eventStatus = 1: #if the event occured
+            eventRange = self.eventList[1] - self.eventList[0] #basically this should be equal Tmax 
+                rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius.
+                Low = float(event) - rangeRadius
+                High = float(event) + rangeRadius
+                self.event = [Low,High]  
+        else: #if the instance was censored
+            eventRange = self.eventList[1] - self.eventList[0] #again, this should be the same at Tmax
+                rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
+                adjEvent = random.randint(event, self.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
+                Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time 
+                High = float(adjEvent) + rangeRadius
+                self.event = [Low,High]
+
      
 
     def buildMatch(self,model,attRef,state): 
