@@ -17,6 +17,7 @@ class DataManagement:
         self.discreteEvent = False  # Is the Class/Phenotype Discrete? (False = Continuous)
         self.eventList = [0,0]  # Stores maximum and minimum event times SHOULD THE MIN ALWAYS JUST BE ZERO?
         self.eventTypes = []
+        #self.eventDict = {}
         self.eventRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
         self.eventStatus = [] # Will store the event status (had the event = 1, censored = 0 for each instance)
         #self.calcErr = None #do we need this? YES
@@ -86,7 +87,7 @@ class DataManagement:
                 classCount[target]+=1
                 self.classPredictionWeights[target] += 1
             else:
-                self.phenotypeList.append(target)
+                self.eventList.append(target)
                 classCount[target] = 1
                 self.classPredictionWeights[target] = 1
             currentEventIndex+=1
