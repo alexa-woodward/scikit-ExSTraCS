@@ -26,7 +26,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.matchCover = 0 #what are these? 
         self.correctCover = 0
 #----------------------------------------------------------------------------------------------------------------------------
-# initializeByCopy: XXX
+# initializeByCopy: XXX What is this doing? 
 #----------------------------------------------------------------------------------------------------------------------------  
     def initializeByCopy(self,toCopy,iterationCount): #idk what this means 
         self.specifiedAttList = copy.deepcopy(toCopy.specifiedAttList)
@@ -61,62 +61,13 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     self.specifiedAttList.append(attRef) #append the attribute (position?) to the specific attribute list  
                     self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
                     
-    ### THE FUNCTION BELOW COPIED FROM [here](https://github.com/alexa-woodward/scikit-ExSTraCS/blob/master/continuous_endpoint_ExSTraCS/exstracs_classifier.py) on 11/15, will delete later...provides strategy for covering with continuous endpoint. Will need to update how this is done based on whether the event status is 1 or 0.                
-    #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    # CLASSIFIER CONSTRUCTION METHODS
-    #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-    def classifierCovering(self, setSize, exploreIter, state, phenotype):
-        """ Makes a new classifier when the covering mechanism is triggered.  The new classifier will match the current training instance. 
-        Covering will NOT produce a default rule (i.e. a rule with a completely general condition). """
-        #Initialize new classifier parameters----------
-        self.timeStampGA = exploreIter
-        self.initTimeStamp = exploreIter
-        self.aveMatchSetSize = setSize
-        self.origin = 'Covering'  #temporary code 
-        dataInfo = cons.env.formatData
-        #-------------------------------------------------------
-        # DISCRETE PHENOTYPE
-        #-------------------------------------------------------
-        if dataInfo.discretePhenotype: 
-            self.phenotype = phenotype
-        #-------------------------------------------------------
-        # CONTINUOUS PHENOTYPE
-        #-------------------------------------------------------
-        else: #ContinuousCode #########################
-            phenotypeRange = dataInfo.phenotypeList[1] - dataInfo.phenotypeList[0]
-            rangeRadius = random.randint(25,75)*0.01*phenotypeRange / 2.0 #Continuous initialization domain radius.
-            Low = float(phenotype) - rangeRadius
-            High = float(phenotype) + rangeRadius
-            self.phenotype = [Low,High] #ALKR Representation, Initialization centered around training instance  with a range between 25 and 75% of the domain size.      
-   
+### THE FUNCTION BELOW COPIED FROM [here](https://github.com/alexa-woodward/scikit-ExSTraCS/blob/master/continuous_endpoint_ExSTraCS/exstracs_classifier.py) on 11/15, will delete later...provides strategy for covering with continuous endpoint. Will need to update how this is done based on whether the event status is 1 or 0.                
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# CLASSIFIER CONSTRUCTION METHODS
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------     
 
-        #-------------------------------------------------------
-        # GENERATE MATCHING CONDITION - With Expert Knowledge Weights
-        #-------------------------------------------------------     
-        #DETERMINISTIC STRATEGY
-        if cons.useExpertKnowledge:  
-            toSpecify = random.randint(1,dataInfo.specLimit) # Pick number of attributes to specify
-            i = 0
-
-            while len(self.specifiedAttList) < toSpecify:
-                target = cons.EK.EKRank[i]
-                if state[target] != cons.labelMissingData: # If one of the randomly selected specified attributes turns out to be a missing data point, generalize instead.
-                    self.specifiedAttList.append(target)
-                    self.condition.append(self.buildMatch(target, state)) 
-                i += 1
-                
-        #-------------------------------------------------------
-        # GENERATE MATCHING CONDITION - Without Expert Knowledge Weights
-        #-------------------------------------------------------
-        else: 
-            toSpecify = random.randint(1,dataInfo.specLimit) # Pick number of attributes to specify
-            potentialSpec = random.sample(range(dataInfo.numAttributes),toSpecify) # List of possible specified attributes
-            for attRef in potentialSpec:
-                if state[attRef] != cons.labelMissingData: # If one of the randomly selected specified attributes turns out to be a missing data point, generalize instead.
-                    self.specifiedAttList.append(attRef)
-                    self.condition.append(self.buildMatch(attRef, state))
 #--------------------------------------------------------------------------------------------- 
-# New covering function for survival outcomes - added 11/15
+# New covering function for survival outcomes - updated 11/15
 #---------------------------------------------------------------------------------------------
                     
     def initializeByCovering(self,model,setSize,state,event,eventStatus): #will need to add a way to do this for the continuous outcome!
@@ -125,7 +76,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     self.aveMatchSetSize = setSize #zero to start?
     #self.event = event #this will have to change
     self.EvalTime = EvalTime #will need to set the evaluation time for covering , will need to choose this somewhere in the data_management script 
-    self.discreteEvent = False
+    self.discreteEvent = False #may or may not need this - will update data_management.py file "discreteEvent" being "discretePhenotype"...set to false 
     
     toSpecify = random.randint(1, model.rule_specificity_limit) #RSL gets set in the data_management.py...draws a random integer within the range 1 to RSL (i.e., how many attributes can be specified within a given rule).
     if model.doExpertKnowledge: #if the model uses expert knowledge, do the following:
