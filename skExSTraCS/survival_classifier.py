@@ -25,7 +25,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.correctCount = 0
         self.matchCover = 0 #what are these? 
         self.correctCover = 0
-
+#----------------------------------------------------------------------------------------------------------------------------
+# initializeByCopy: XXX
+#----------------------------------------------------------------------------------------------------------------------------  
     def initializeByCopy(self,toCopy,iterationCount): #idk what this means 
         self.specifiedAttList = copy.deepcopy(toCopy.specifiedAttList)
         self.condition = copy.deepcopy(toCopy.condition)
@@ -185,7 +187,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         if not self.epochComplete and (model.iterationCount - self.initTimeStamp - 1) >= model.env.formatData.numTrainInstances:
             self.epochComplete = True
 #----------------------------------------------------------------------------------------------------------------------------
-# matchs: XXX
+# match: XXX
 #---------------------------------------------------------------------------------------------------------------------------- 
     def match(self, model, state): #this funtion matches attributes (from instances) to the conditions (from a rule)
         for i in range(len(self.condition)): #for each attribute in the condition:
