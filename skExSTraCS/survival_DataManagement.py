@@ -16,6 +16,7 @@ class DataManagement:
         # About Event times, events or censoring 
         self.discreteEvent = False  # Is the Class/Phenotype Discrete? (False = Continuous)
         self.eventList = [0,0]  # Stores maximum and minimum event times SHOULD THE MIN ALWAYS JUST BE ZERO?
+        self.eventTypes = []
         self.eventRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
         self.eventStatus = [] # Will store the event status (had the event = 1, censored = 0 for each instance)
         #self.calcErr = None #do we need this? YES
@@ -48,20 +49,20 @@ class DataManagement:
                 uniqueCombinations = math.pow(self.averageStateCount,i)
             model.rule_specificity_limit = min(i,self.numAttributes)
 
-        self.trainFormatted = self.formatData(dataFeatures, dataEventTimes, dataEventStatus, data model)  # The only np array
+        self.trainFormatted = self.formatData(dataFeatures, dataEventTimes, dataEventStatus, model)  # The only np array
 #----------------------------------------------------------------------------------------------------------------------------
-# Function discriminateEventStatus: counts how many of each event/censored are in the dataset? NEED TO UPDATE THIS FOR CONTINUOUS PHENOTYPES
+# Function discriminateEventStatus: counts how many of each event/censored are in the dataset? 
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def discriminateEventStatus(self,eventStatuses): 
+    def discriminateEventStatus(self,eventStatus): 
         currentEventIndex = 0
         classCount = {} #dictionary containing the key (1 or 0) and value (count of each).
         while (currentEventIndex < self.numTrainInstances):
-            target = eventStatuses[currentEventIndex]
-            if target in self.eventList:
+            target = eventStatus[currentEventIndex]
+            if target in self.eventTypes:
                 classCount[target]+=1
                 self.classPredictionWeights[target] += 1
             else:
-                self.eventList.append(target)
+                self.eventTypes.append(target)
                 classCount[target] = 1
                 self.classPredictionWeights[target] = 1
             currentEventIndex+=1
@@ -180,24 +181,28 @@ class DataManagement:
         self.eventRange = self.eventList[1] - self.eventList[0]
         
 
-
-
-#Adding on 11/2 from from exstracs_data.py from the continuous endpoint implementation...creating an "error" for the continuous endpoints
-# Calculate the error of the continuous phenotype scores-----------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------------------
-# Function calcErr:
+# Function calcSD: this seems to be only used for RBAs (in Ryan's continuous ExSTraCS - not sure if it's necessary here, but leaving it for now
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def calcErr(self,contPhenoList):
-        #
-        #
-        #
-        #
-        
+    def calcSD(self, timeeventList):
+        """  Calculate the standard deviation of the continuous phenotype scores. """
+        for i in range(len(timeeventList)):
+            timeeventList[i] = float(timeeventList[i])
+
+        avg = float(sum(timeeventList)/len(timeeventList))
+        dev = []
+        for x in timeeventList:
+            dev.append(x-avg)
+            sqr = []
+        for x in dev:
+            sqr.append(x*x)
+            
+        return math.sqrt(sum(sqr)/(len(sqr)-1))    
 #----------------------------------------------------------------------------------------------------------------------------
 # Function formatData:
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def formatData(self,features,phenotypes,model):
-        formatted = np.insert(features,self.numAttributes,phenotypes,1) #Combines features and phenotypes into one array
+    def formatData(self,features,eventTimes, eventStatus, model):
+        formatted = np.insert(features,self.numAttributes,eventTimes,eventStatus, 1) #Combines features and phenotypes into one array
 
         self.shuffleOrder = np.random.choice(self.numTrainInstances,self.numTrainInstances,replace=False) #e.g. first element in this list is where the first element of the original list will go
         shuffled = []
@@ -208,7 +213,7 @@ class DataManagement:
         formatted = np.array(shuffled)
 
         shuffledFeatures = formatted[:,:-1].tolist()
-        shuffledLabels = formatted[:,self.numAttributes].tolist()
+        shuffledLabels = formatted[:,self.numAttributes].tolist() #might need to update this, because now the labels are two values 
         for i in range(len(shuffledFeatures)):
             for j in range(len(shuffledFeatures[i])):
                 if np.isnan(shuffledFeatures[i][j]):
