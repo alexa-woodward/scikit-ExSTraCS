@@ -140,20 +140,15 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             if state[attRef] != None: #if the state of that attribute is not none
                 self.specifiedAttList.append(attRef) #append the attribute (position?) to the specific attribute list
                 self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
-#----------------------------------------------------------------------------------------------------------------------------
-# Addition of continuous event range and event status 
-#----------------------------------------------------------------------------------------------------------------------------
-    if self.discreteEvent: #if the event is discrete, set event equal to that value (may not need this)
-        self.event = event
-        
-    else: #if the event is continuous, 
-        if self.eventStatus = 1: #if the event occured
+                
+### Creating a continuous event range (endpoint):           
+    if self.eventStatus = 1: #if the event occured
             eventRange = self.eventList[1] - self.eventList[0] #basically this should be equal Tmax 
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius.
                 Low = float(event) - rangeRadius
                 High = float(event) + rangeRadius
                 self.event = [Low,High]  
-        else: #if the instance was censored
+    else: #if the instance was censored
             eventRange = self.eventList[1] - self.eventList[0] #again, this should be the same at Tmax
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
                 adjEvent = random.randint(event, self.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
@@ -161,7 +156,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 High = float(adjEvent) + rangeRadius
                 self.event = [Low,High]
 
-     
+#----------------------------------------------------------------------------------------------------------------------------
+# Build match function: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
+#----------------------------------------------------------------------------------------------------------------------------    
 
     def buildMatch(self,model,attRef,state): 
         attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type of attribute (discrete/continuous) (see lines #96-100 of data_mangement.py)
@@ -180,10 +177,16 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             condList = state[attRef] #for a discrete attribute, the condition list is simply its state
         return condList
 
+#----------------------------------------------------------------------------------------------------------------------------
+# updateEpochStatus: XXX
+#----------------------------------------------------------------------------------------------------------------------------  
+
     def updateEpochStatus(self,model): #has the model iterated enough times? if not, keep going. If true, set epochComplete = True
         if not self.epochComplete and (model.iterationCount - self.initTimeStamp - 1) >= model.env.formatData.numTrainInstances:
             self.epochComplete = True
-
+#----------------------------------------------------------------------------------------------------------------------------
+# matchs: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def match(self, model, state): #this funtion matches attributes (from instances) to the conditions (from a rule)
         for i in range(len(self.condition)): #for each attribute in the condition:
             specifiedIndex = self.specifiedAttList[i] #get the index of that attribute 
@@ -208,7 +211,10 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 else:
                     return False
         return True 
-
+    
+#----------------------------------------------------------------------------------------------------------------------------
+# equals: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def equals(self,cl): #for each rule, checks to see if the other rules are the sam
         if cl.phenotype == self.phenotype and len(cl.specifiedAttList) == len(self.specifiedAttList): #if the phenotypes are the same and the list of attributes are the same length, check the following...
             clRefs = sorted(cl.specifiedAttList) #sort the attribute indexes for the classifier
@@ -222,45 +228,63 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         return False #if the phenotypes and lengths of the specified attribute lists of two classifiers don't match, return false
     
     ## All the rest of this stuff would probably stay exactly the same 
-
+#----------------------------------------------------------------------------------------------------------------------------
+# updateExperience: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def updateExperience(self): #add 1 to either the matchcount or the matchcover, depending on what was needed 
         self.matchCount += 1
         if self.epochComplete:  # Once epoch Completed, number of matches for a unique rule will not change, so do repeat calculation
             pass
         else:
             self.matchCover += 1
-
+#----------------------------------------------------------------------------------------------------------------------------
+# updateMatchSetSize XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def updateMatchSetSize(self, model,matchSetSize):  #update the match set size. "beta" is set at 0.2, a learning parameter used in calculating the average correct set size
         if self.matchCount < 1.0 / model.beta: # if the match count is less than 5
             self.aveMatchSetSize = (self.aveMatchSetSize * (self.matchCount-1)+ matchSetSize) / float(self.matchCount) #update the average to...
         else: #if its not less than 5,
             self.aveMatchSetSize = self.aveMatchSetSize + model.beta * (matchSetSize - self.aveMatchSetSize)
-
+#----------------------------------------------------------------------------------------------------------------------------
+# updateCorrect: XXX EDIT THIS
+#---------------------------------------------------------------------------------------------------------------------------- 
     def updateCorrect(self):
         self.correctCount += 1
         if self.epochComplete: #Once epoch Completed, number of correct for a unique rule will not change, so do repeat calculation
             pass
         else:
             self.correctCover += 1
-
+#----------------------------------------------------------------------------------------------------------------------------
+# updateAccuracy: XXX NEED TO EDIT THIS
+#---------------------------------------------------------------------------------------------------------------------------- 
     def updateAccuracy(self):
         self.accuracy = self.correctCount / float(self.matchCount)
-
+#----------------------------------------------------------------------------------------------------------------------------
+# updateFitness: XXX THIS WILL PROBABLY STAY THE SAME
+#---------------------------------------------------------------------------------------------------------------------------- 
     def updateFitness(self,model):
         self.fitness = pow(self.accuracy, model.nu)
-
+#----------------------------------------------------------------------------------------------------------------------------
+# updateNumerosity: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def updateNumerosity(self, num):
         """ Alters the numerosity of the classifier.  Notice that num can be negative! """
         self.numerosity += num #but where does num come from??
-
+#----------------------------------------------------------------------------------------------------------------------------
+# isSubsumer: XXX UPDATE
+#---------------------------------------------------------------------------------------------------------------------------- 
     def isSubsumer(self, model): #is the match count and accuracy of a more general rule just as good as the more specific one? If so,  return true
         if self.matchCount > model.theta_sub and self.accuracy > model.acc_sub: #if the match count is greater than the theta_sub (subsumption experience threshold, default = 20) and the accuracy is greater than the acc_sub (default = 0.99), return true
             return True
         return False
-
+#----------------------------------------------------------------------------------------------------------------------------
+# subsumes: XXX UPDATE
+#---------------------------------------------------------------------------------------------------------------------------- 
     def subsumes(self,model,cl): 
         return cl.phenotype == self.phenotype and self.isSubsumer(model) and self.isMoreGeneral(model,cl)
-
+#----------------------------------------------------------------------------------------------------------------------------
+# isMoreGeneral: XXX UPDATE
+#---------------------------------------------------------------------------------------------------------------------------- 
     def isMoreGeneral(self,model, cl): #
         if len(self.specifiedAttList) >= len(cl.specifiedAttList): #if the length of the specified attribute list for one classifier is greater than or equal to the that of the other, return false (classifier is more specific)
             return False
@@ -277,11 +301,15 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 if self.condition[i][1] > cl.condition[otherRef][1]:
                     return False
         return True #otherwise, return true 
-
+#----------------------------------------------------------------------------------------------------------------------------
+# updateTimeStamp: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def updateTimeStamp(self, ts): #where does ts come from?
         """ Sets the time stamp of the classifier. """
         self.timeStampGA = ts
-
+#----------------------------------------------------------------------------------------------------------------------------
+# uniformCrossover: XXX UPDATE
+#---------------------------------------------------------------------------------------------------------------------------- 
     def uniformCrossover(self,model,cl): #define the uniform crossover function 
         p_self_specifiedAttList = copy.deepcopy(self.specifiedAttList) #A deep copy constructs a new compound object and then, recursively, inserts copies into it of the objects found in the original.
         p_cl_specifiedAttList = copy.deepcopy(cl.specifiedAttList) #deep copy the attribute list of two parent rules 
@@ -376,7 +404,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         if changed and (tempList1 == tempList2):
             changed = False
         return changed
-
+#----------------------------------------------------------------------------------------------------------------------------
+# specLimitFix: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def specLimitFix(self, model, cl):
         """ Lowers classifier specificity to specificity limit. """
         if model.do_attribute_feedback:
@@ -400,15 +430,21 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 i = cl.specifiedAttList.index(j)  # reference to the position of the attribute in the rule representation
                 cl.specifiedAttList.remove(j)
                 cl.condition.pop(i)  # buildMatch handles both discrete and continuous attributes
-
+#----------------------------------------------------------------------------------------------------------------------------
+# setAccuracy: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def setAccuracy(self, acc):
         """ Sets the accuracy of the classifier """
         self.accuracy = acc
-
+#----------------------------------------------------------------------------------------------------------------------------
+# setFitness: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def setFitness(self, fit):
         """  Sets the fitness of the classifier. """
         self.fitness = fit
-
+#----------------------------------------------------------------------------------------------------------------------------
+# mutation: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def mutation(self,model,state):
         """ Mutates the condition of the classifier. Also handles phenotype mutation. This is a niche mutation, which means that the resulting classifier will still match the current instance.  """
         pressureProb = 0.5  # Probability that if EK is activated, it will be applied.
@@ -516,7 +552,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     self.mutateContinuousAttributes(model,useAT,j)
 
         return changed
-
+#----------------------------------------------------------------------------------------------------------------------------
+# selectGeneralizeRW: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def selectGeneralizeRW(self,model,count):
         probList = []
         for attribute in self.specifiedAttList:
@@ -548,7 +586,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     #         specAttList.pop(i)
     #         currentCount += 1
     #     return selectList
-
+#----------------------------------------------------------------------------------------------------------------------------
+# selectSpecifyRW: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def selectSpecifyRW(self,model,count):
         pickList = list(range(model.env.formatData.numAttributes))
         for i in self.specifiedAttList:  # Make list with all non-specified attributes
@@ -588,7 +628,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     #         pickList.pop(i)
     #         currentCount += 1
     #     return selectList
-
+#----------------------------------------------------------------------------------------------------------------------------
+# mutateContinuousAttributes: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def mutateContinuousAttributes(self, model,useAT, j):
         # -------------------------------------------------------
         # MUTATE CONTINUOUS ATTRIBUTES
@@ -633,7 +675,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         else:
             pass
 
-
+#----------------------------------------------------------------------------------------------------------------------------
+# rangeCheck: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def rangeCheck(self,model):
         """ Checks and prevents the scenario where a continuous attributes specified in a rule has a range that fully encloses the training set range for that attribute."""
         for attRef in self.specifiedAttList:
@@ -652,7 +696,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     self.condition[i][1] = trueMin + valBuffer
                 else:
                     pass
-
+#----------------------------------------------------------------------------------------------------------------------------
+# getDelProp: XXX
+#---------------------------------------------------------------------------------------------------------------------------- 
     def getDelProp(self, model, meanFitness):
         """  Returns the vote for deletion of the classifier. """
         if self.fitness / self.numerosity >= model.delta * meanFitness or self.matchCount < model.theta_del:
