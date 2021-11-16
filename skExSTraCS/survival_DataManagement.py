@@ -4,21 +4,21 @@ import math
 #-------------------------------------------------------------
 
 class DataManagement:
-    def __init__(self,dataFeatures,dataPhenotypes,model):
-        self.savedRawTrainingData = [dataFeatures,dataPhenotypes]
+    def __init__(self,dataFeatures,dataEventTimes,dataEventStatus,model):
+        self.savedRawTrainingData = [dataFeatures,dataEventsTimes,dataEventStatus]
         self.numAttributes = dataFeatures.shape[1]  # The number of attributes in the input file.
-        self.attributeInfoType = [0] * self.numAttributes  # stores false (d) or true (c) depending on its type, which points to parallel reference in one of the below 2 arrays
+        self.attributeInfoType = [0] * self.numAttributes  #stores false (d) or true (c) depending on its type, which points to parallel reference in one of the below 2 arrays
         self.attributeInfoContinuous = [[np.inf,-np.inf] for _ in range(self.numAttributes)] #stores continuous ranges and NaN otherwise
         self.attributeInfoDiscrete = [0] * self.numAttributes  # stores arrays of discrete values or NaN otherwise.
         for i in range(0, self.numAttributes):
             self.attributeInfoDiscrete[i] = AttributeInfoDiscreteElement() #list of distinct values (see the last function in this script)
 
-        # About Phenotypes
-        self.discretePhenotype = True  # Is the Class/Phenotype Discrete? (False = Continuous)
-        self.phenotypeList = []  # Stores all possible discrete phenotype states/classes or maximum and minimum values for a continuous phenotype
-        self.phenotypeRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
+        # About Event times, events or censoring 
+        self.discreteEvent = False  # Is the Class/Phenotype Discrete? (False = Continuous)
+        self.eventList = [0,0]  # Stores maximum and minimum event times SHOULD THE MIN ALWAYS JUST BE ZERO?
+        self.eventRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
         self.eventStatus = [] # Will store the event status (had the event = 1, censored = 0 for each instance)
-        #self.calcErr = None #do we need this?
+        #self.calcErr = None #do we need this? YES
         #self.missingEndpointList = [] #??
         self.isDefault = True  # Is discrete attribute limit an int or string
         try:
@@ -28,12 +28,13 @@ class DataManagement:
 
         #Initialize some variables
         self.continuousCount = 0
-        self.classPredictionWeights = {}
+        self.classPredictionWeights = {} #what are these for 
         self.averageStateCount = 0
 
         # About Dataset
         self.numTrainInstances = dataFeatures.shape[0]  # The number of instances in the training data
-        self.discriminateClasses(dataPhenotypes)
+        self.discriminateEventTimes(dataEventTimes)
+        self.discriminateEventStatus(dataEventStatus)
 
         self.discriminateAttributes(dataFeatures, model)
         self.characterizeAttributes(dataFeatures, model)
@@ -47,29 +48,58 @@ class DataManagement:
                 uniqueCombinations = math.pow(self.averageStateCount,i)
             model.rule_specificity_limit = min(i,self.numAttributes)
 
-        self.trainFormatted = self.formatData(dataFeatures, dataPhenotypes, model)  # The only np array
+        self.trainFormatted = self.formatData(dataFeatures, dataEventTimes, dataEventStatus, data model)  # The only np array
+#----------------------------------------------------------------------------------------------------------------------------
+# Function discriminateEventStatus: counts how many of each event/censored are in the dataset? NEED TO UPDATE THIS FOR CONTINUOUS PHENOTYPES
+#---------------------------------------------------------------------------------------------------------------------------- 
+    def discriminateEventStatus(self,eventStatuses): 
+        currentEventIndex = 0
+        classCount = {} #dictionary containing the key (1 or 0) and value (count of each).
+        while (currentEventIndex < self.numTrainInstances):
+            target = eventStatuses[currentEventIndex]
+            if target in self.eventList:
+                classCount[target]+=1
+                self.classPredictionWeights[target] += 1
+            else:
+                self.eventList.append(target)
+                classCount[target] = 1
+                self.classPredictionWeights[target] = 1
+            currentEventIndex+=1
 
-    def discriminateClasses(self,phenotypes): #counts how many of each class are in the dataset? NEED TO UPDATE THIS FOR CONTINUOUS PHENOTYOES
-        currentPhenotypeIndex = 0
+        total = 0
+        for eachClass in list(classCount.keys()): #(1 or 0)
+            total += classCount[eachClass] #total number of classes, which will always be 2 in our case...
+        for eachClass in list(classCount.keys()): #(1 or 0)
+            self.classPredictionWeights[eachClass] = 1 - (self.classPredictionWeights[eachClass]/total) #standardize the class prediciton weights?
+            
+            
+#----------------------------------------------------------------------------------------------------------------------------
+# Function discriminateEventTimes: counts how many of each event time are in the dataset (key = eventTime, value = number of occurences). Is it more appropriate to use the prediction weights here??
+#---------------------------------------------------------------------------------------------------------------------------- 
+    def discriminateEventTimes(self,eventTimes): 
+        currentEventIndex = 0
         classCount = {}
-        while (currentPhenotypeIndex < self.numTrainInstances):
-            target = phenotypes[currentPhenotypeIndex]
-            if target in self.phenotypeList:
+        while (currentEventIndex < self.numTrainInstances):
+            target = eventTimes[currentEventIndex]
+            if target in self.eventList:
                 classCount[target]+=1
                 self.classPredictionWeights[target] += 1
             else:
                 self.phenotypeList.append(target)
                 classCount[target] = 1
                 self.classPredictionWeights[target] = 1
-            currentPhenotypeIndex+=1
+            currentEventIndex+=1
 
         total = 0
         for eachClass in list(classCount.keys()):
             total += classCount[eachClass]
         for eachClass in list(classCount.keys()):
             self.classPredictionWeights[eachClass] = 1 - (self.classPredictionWeights[eachClass]/total)
-
-    def discriminateAttributes(self,features,model): #create a dictionary with key = state and value = # of times it appears. 
+            
+#----------------------------------------------------------------------------------------------------------------------------
+# Function discriminateAttributes: create a dictionary with key = state and value = # of times it appears (I think)
+#---------------------------------------------------------------------------------------------------------------------------- 
+    def discriminateAttributes(self,features,model): 
         for att in range(self.numAttributes): #for eaach attribute 
             attIsDiscrete = True #set is discrete to true (what if it isn't?)
             if self.isDefault: # if the discrete atttribute limit is an integer
@@ -103,7 +133,9 @@ class DataManagement:
             else:
                 self.attributeInfoType[att] = True
                 self.continuousCount += 1
-
+#----------------------------------------------------------------------------------------------------------------------------
+# Function characterizeAttributes: identifies features as continuous or discrete and returns lists of the values present in each attribute (separately for continuous or discrete features) 
+#---------------------------------------------------------------------------------------------------------------------------- 
     def characterizeAttributes(self,features,model):
         for currentFeatureIndexInAttributeInfo in range(self.numAttributes): #for each feature index in attribute info
             for currentInstanceIndex in range(self.numTrainInstances): #for each instance in the environment 
@@ -126,39 +158,44 @@ class DataManagement:
             if self.attributeInfoType[currentFeatureIndexInAttributeInfo]: #if attribute is continuous
                 self.averageStateCount += 2
         self.averageStateCount = self.averageStateCount/self.numAttributes
-   
-#Adding on 11/2 from exstracs_data.py from the continuous endpoint implementation....this should be similar to how we characterize continuous attributes
-# Determine the range of phenotype values (for continuous endpoints) ----------------------------------------
-    def characterizePhenotype(self,phenotypes,model): #intake phenotypes or phenotypeList?
-        contPhenoList = [] #create an empty list 
-        for currentInstanceIndex in range(len(phenotypes)): #does it make sense to use "currentInstanceIndex" here?
-            target = phenotypeList[currentInstanceIndex][self.phenotypeRef] #what is phenotypeRef?
-            contPhenoList.append(target)
+        
+#----------------------------------------------------------------------------------------------------------------------------
+# Function characterizeEventTimes: Determine the range of event times 
+#----------------------------------------------------------------------------------------------------------------------------   
+    def characterizeEventTimes(self,eventTimes,model): 
+        timeeventList = [] #create an empty list 
+        for currentInstanceIndex in range(len(eventTimes)): 
+            target = eventTimes[currentInstanceIndex] 
+            timeeventList.append(target)
             #Find Minimum and Maximum values for the continuous phenotype so we know the range.
             if np.isnan(target): #if it is missing, pass
                 pass
-            elif float(target) > self.phenotypeList[1]:  
-                self.phenotypeList[1] = float(target)
-            elif float(target) < self.phenotypeList[0]:
-                self.phenotypeList[0] = float(target)
+            elif float(target) > self.eventList[1]:  
+                self.eventList[1] = float(target)
+            elif float(target) < self.eventList[0]:
+                self.eventList[0] = float(target)
             else:
                 pass
-        self.phenSD = self.calcSD(contPhenoList)
-        self.phenotypeRange = self.phenotypeList[1] - self.phenotypeList[0]
+        self.eventSD = self.calcSD(timeeventList) #still need to fix this
+        self.eventRange = self.eventList[1] - self.eventList[0]
         
 
-#------------------------------------------------------------------------------------------------------------
+
 
 #Adding on 11/2 from from exstracs_data.py from the continuous endpoint implementation...creating an "error" for the continuous endpoints
 # Calculate the error of the continuous phenotype scores-----------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------------
+# Function calcErr:
+#---------------------------------------------------------------------------------------------------------------------------- 
     def calcErr(self,contPhenoList):
         #
         #
         #
         #
-#------------------------------------------------------------------------------------------------------------ 
         
-
+#----------------------------------------------------------------------------------------------------------------------------
+# Function formatData:
+#---------------------------------------------------------------------------------------------------------------------------- 
     def formatData(self,features,phenotypes,model):
         formatted = np.insert(features,self.numAttributes,phenotypes,1) #Combines features and phenotypes into one array
 
