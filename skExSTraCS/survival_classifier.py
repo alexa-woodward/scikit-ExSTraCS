@@ -70,7 +70,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 # New covering function for survival outcomes - updated 11/15
 #---------------------------------------------------------------------------------------------
                     
-    def initializeByCovering(self,model,setSize,state,event,eventStatus): #will need to add a way to do this for the continuous outcome!
+    def initializeByCovering(self,model,setSize,state,eventTimes,eventStatus): #will need to add a way to do this for the continuous outcome!
     self.timeStampGA = model.iterationCount #the timestamp is set to what iteration we're on
     self.initTimeStamp = model.iterationCount #same
     self.aveMatchSetSize = setSize #zero to start?
@@ -98,13 +98,13 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     if self.eventStatus = 1: #if the event occured
             eventRange = self.eventList[1] - self.eventList[0] #basically this should be equal Tmax 
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius.
-                Low = float(event) - rangeRadius
-                High = float(event) + rangeRadius
+                Low = float(eventTimes) - rangeRadius
+                High = float(eventTimes) + rangeRadius
                 self.event = [Low,High]  
     else: #if the instance was censored
             eventRange = self.eventList[1] - self.eventList[0] #again, this should be the same at Tmax
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
-                adjEvent = random.randint(event, self.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
+                adjEvent = random.randint(eventTimes, self.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
                 Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time 
                 High = float(adjEvent) + rangeRadius
                 self.event = [Low,High]
