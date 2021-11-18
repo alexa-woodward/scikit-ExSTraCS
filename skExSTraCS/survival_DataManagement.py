@@ -20,7 +20,7 @@ class DataManagement:
         #self.eventDict = {}
         self.eventRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
         self.eventStatus = [] # Will store the event status (had the event = 1, censored = 0 for each instance)
-        #self.calcErr = None #do we need this? 
+        #self.calcSD = None #do we need this? 
         #self.missingEndpointList = [] #??
         self.isDefault = True  # Is discrete attribute limit an int or string
         try:
