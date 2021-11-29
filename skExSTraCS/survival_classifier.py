@@ -248,7 +248,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         """ Sets the time stamp of the classifier. """
         self.timeStampGA = ts
 #----------------------------------------------------------------------------------------------------------------------------
-# uniformCrossover: XXX UPDATE
+# uniformCrossover: Started updating 11/29. see code_notes for questions
 #---------------------------------------------------------------------------------------------------------------------------- 
     def uniformCrossover(self,model,cl): #define the uniform crossover function 
         if random.random() < 0.5: #50% of the time crossover the condition, 50% crossover the eventrange 
@@ -349,7 +349,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             return self.eventCrossover(cl, phenotype)
         
 #----------------------------------------------------------------------------------------------------------------------------
-# eventCrossover: Crossover the continuous event range
+# eventCrossover: Crossover the continuous event interval
 #----------------------------------------------------------------------------------------------------------------------------      
         
     def eventCrossover(self, cl, eventTime):
