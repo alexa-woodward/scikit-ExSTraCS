@@ -6,7 +6,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     def __init__(self,model):
         self.specifiedAttList = []
         self.condition = []
-        self.phenotype = None
+        self.eventStatus = None
+        self.eventTime = None
         
         ##addition for survival analysis
         self.EvalTime = 0 #what should the initial value be? When will it get re-assigned? When drawing an instance also need to choose a ET at which to evaluate the instance...this will become ET
@@ -25,6 +26,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.correctCount = 0
         self.matchCover = 0 #what are these? 
         self.correctCover = 0
+        
 #----------------------------------------------------------------------------------------------------------------------------
 # initializeByCopy: XXX What is this doing? 
 #----------------------------------------------------------------------------------------------------------------------------  
@@ -37,29 +39,6 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.aveMatchSetSize = copy.deepcopy(toCopy.aveMatchSetSize)
         self.fitness = toCopy.fitness
         self.accuracy = toCopy.accuracy
-
-    def initializeByCovering(self,model,setSize,state,phenotype): #will need to add a way to do this for the continuous outcome!
-        self.timeStampGA = model.iterationCount #the timestamp is set to what iteration we're on
-        self.initTimeStamp = model.iterationCount #same 
-        self.aveMatchSetSize = setSize #zero to start?
-        self.phenotype = phenotype #this will have to change 
-        self.EvalTime = EvalTime #will need to set the evaluation time for covering , will need to choose this somewhere in the data_management script
-
-        toSpecify = random.randint(1, model.rule_specificity_limit) #RSL gets set in the data_management.py...draws a random integer within the range 1 to RSL (i.e., how many attributes can be specified within a given rule).
-        if model.doExpertKnowledge: #if the model uses expert knowledge, do the following:
-            i = 0
-            while len(self.specifiedAttList) < toSpecify and i < model.env.formatData.numAttributes - 1:
-                target = model.EK.EKRank[i]
-                if state[target] != None:
-                    self.specifiedAttList.append(target)
-                    self.condition.append(self.buildMatch(model,target,state))
-                i += 1
-        else: #if not, then:
-            potentialSpec = random.sample(range(model.env.formatData.numAttributes),toSpecify) #randomly sample "toSpecify" values from the range = the number of attributes
-            for attRef in potentialSpec: #for each attribute specified  
-                if state[attRef] != None: #if the state of that attribute is not none
-                    self.specifiedAttList.append(attRef) #append the attribute (position?) to the specific attribute list  
-                    self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
                     
 ### THE FUNCTION BELOW COPIED FROM [here](https://github.com/alexa-woodward/scikit-ExSTraCS/blob/master/continuous_endpoint_ExSTraCS/exstracs_classifier.py) on 11/15, will delete later...provides strategy for covering with continuous endpoint. Will need to update how this is done based on whether the event status is 1 or 0.                
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -75,7 +54,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     self.initTimeStamp = model.iterationCount #same
     self.aveMatchSetSize = setSize #zero to start?
     #self.event = event #this will have to change
-    self.EvalTime = EvalTime #will need to set the evaluation time for covering , will need to choose this somewhere in the data_management script 
+    self.eventTime = eventTime #time of event or censoring 
+    self.eventStatus = eventStatus #event status, failed = 1, censored = 0
     self.discreteEvent = False #may or may not need this - will update data_management.py file "discreteEvent" being "discretePhenotype"...set to false 
     
     toSpecify = random.randint(1, model.rule_specificity_limit) #RSL gets set in the data_management.py...draws a random integer within the range 1 to RSL (i.e., how many attributes can be specified within a given rule).
@@ -100,14 +80,14 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius.
                 Low = float(eventTime) - rangeRadius
                 High = float(eventTime) + rangeRadius
-                self.event = [Low,High]  
+                self.eventInterval = [Low,High]  
     else: #if the instance was censored
             eventRange = self.eventList[1] - self.eventList[0] #again, this should be the same at Tmax
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
-                adjEvent = random.randint(eventTimes, self.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
+                adjEvent = random.randint(eventTime, self.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
                 Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time 
                 High = float(adjEvent) + rangeRadius
-                self.event = [Low,High]
+                self.eventInterval = [Low,High]
 
 #----------------------------------------------------------------------------------------------------------------------------
 # Build match function: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
@@ -131,14 +111,14 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         return condList
 
 #----------------------------------------------------------------------------------------------------------------------------
-# updateEpochStatus: XXX
+# updateEpochStatus: determines whether or not the classifier has seen all of the instances. If true, set epochComplete = True
 #----------------------------------------------------------------------------------------------------------------------------  
 
-    def updateEpochStatus(self,model): #has the model iterated enough times? if not, keep going. If true, set epochComplete = True
+    def updateEpochStatus(self,model):  
         if not self.epochComplete and (model.iterationCount - self.initTimeStamp - 1) >= model.env.formatData.numTrainInstances:
             self.epochComplete = True
 #----------------------------------------------------------------------------------------------------------------------------
-# match: XXX
+# match: #this funtion matches attributes (from instances) to the conditions (from a rule) - this will likely stay the same, only deals with features, not the outcome
 #---------------------------------------------------------------------------------------------------------------------------- 
     def match(self, model, state): #this funtion matches attributes (from instances) to the conditions (from a rule)
         for i in range(len(self.condition)): #for each attribute in the condition:
@@ -166,10 +146,10 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         return True 
     
 #----------------------------------------------------------------------------------------------------------------------------
-# equals: XXX
+# equals: checks to see if there are any duplicate rules (can we look at intervals here? or need to do mid range of intervals?)
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def equals(self,cl): #for each rule, checks to see if the other rules are the sam
-        if cl.phenotype == self.phenotype and len(cl.specifiedAttList) == len(self.specifiedAttList): #if the phenotypes are the same and the list of attributes are the same length, check the following...
+    def equals(self,cl): 
+        if cl.eventInterval == self.eventInterval and len(cl.specifiedAttList) == len(self.specifiedAttList): #if the event ranges are the same and the list of attributes are the same length, check the following...
             clRefs = sorted(cl.specifiedAttList) #sort the attribute indexes for the classifier
             selfRefs = sorted(self.specifiedAttList) #sort the attribute indexes
             if clRefs == selfRefs: #if they are the same, then...
@@ -180,9 +160,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 return True #if they do all match, return true (I assume somewhere this would update the numerosity)
         return False #if the phenotypes and lengths of the specified attribute lists of two classifiers don't match, return false
     
-    ## All the rest of this stuff would probably stay exactly the same 
+    ## All the rest of this stuff would probably stay very similar
 #----------------------------------------------------------------------------------------------------------------------------
-# updateExperience: XXX
+# updateExperience: updates how many instances the classifier (rule) has seen. If it has seen all the instances, pass.
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateExperience(self): #add 1 to either the matchcount or the matchcover, depending on what was needed 
         self.matchCount += 1
@@ -191,15 +171,15 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         else:
             self.matchCover += 1
 #----------------------------------------------------------------------------------------------------------------------------
-# updateMatchSetSize XXX
+# updateMatchSetSize: #update the match set size. "beta" is set at 0.2, a learning parameter used in calculating the average correct set size
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def updateMatchSetSize(self, model,matchSetSize):  #update the match set size. "beta" is set at 0.2, a learning parameter used in calculating the average correct set size
+    def updateMatchSetSize(self, model,matchSetSize):  
         if self.matchCount < 1.0 / model.beta: # if the match count is less than 5
             self.aveMatchSetSize = (self.aveMatchSetSize * (self.matchCount-1)+ matchSetSize) / float(self.matchCount) #update the average to...
         else: #if its not less than 5,
             self.aveMatchSetSize = self.aveMatchSetSize + model.beta * (matchSetSize - self.aveMatchSetSize)
 #----------------------------------------------------------------------------------------------------------------------------
-# updateCorrect: XXX EDIT THIS
+# updateCorrect: updates the correct count for a classifier until all instances have been seen, once epochComplete add to "correctCover" instead 
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateCorrect(self):
         self.correctCount += 1
@@ -208,35 +188,39 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         else:
             self.correctCover += 1
 #----------------------------------------------------------------------------------------------------------------------------
-# updateAccuracy: XXX NEED TO EDIT THIS
+# updateAccuracy: update the accuracy for a classifier. Going to change this so it's related to the ERROR. Might update to MFF
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateAccuracy(self):
         self.accuracy = self.correctCount / float(self.matchCount)
 #----------------------------------------------------------------------------------------------------------------------------
-# updateFitness: XXX THIS WILL PROBABLY STAY THE SAME
+# updateFitness: THIS WILL PROBABLY STAY THE SAME
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateFitness(self,model):
         self.fitness = pow(self.accuracy, model.nu)
 #----------------------------------------------------------------------------------------------------------------------------
-# updateNumerosity: XXX
+# updateNumerosity: THIS WILL PROBABLY STAY THE SAME
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateNumerosity(self, num):
         """ Alters the numerosity of the classifier.  Notice that num can be negative! """
         self.numerosity += num #but where does num come from??
 #----------------------------------------------------------------------------------------------------------------------------
-# isSubsumer: XXX UPDATE
+# isSubsumer: Returns if the classifier (self) is a possible subsumer. A classifier must have sufficient experience (one epoch) and it must also be as or more accurate than the classifier it is trying to subsume.  """
 #---------------------------------------------------------------------------------------------------------------------------- 
     def isSubsumer(self, model): #is the match count and accuracy of a more general rule just as good as the more specific one? If so,  return true
         if self.matchCount > model.theta_sub and self.accuracy > model.acc_sub: #if the match count is greater than the theta_sub (subsumption experience threshold, default = 20) and the accuracy is greater than the acc_sub (default = 0.99), return true
             return True
         return False
+   
 #----------------------------------------------------------------------------------------------------------------------------
-# subsumes: XXX UPDATE
+# subsumes: Returns if the classifier (self) subsumes cl - updated 11/29
 #---------------------------------------------------------------------------------------------------------------------------- 
     def subsumes(self,model,cl): 
-        return cl.phenotype == self.phenotype and self.isSubsumer(model) and self.isMoreGeneral(model,cl)
+        #FOR SURVIVAL DATA
+        return self.event[0] >= cl.event[0] and self.event[1] <= cl.event[1]:
+                if self.isSubsumer() and self.isMoreGeneral(cl):
+
 #----------------------------------------------------------------------------------------------------------------------------
-# isMoreGeneral: XXX UPDATE
+# isMoreGeneral: Returns if the classifier (self) is more general than cl. Check that all attributes specified in self are also specified in cl. Should remain the same
 #---------------------------------------------------------------------------------------------------------------------------- 
     def isMoreGeneral(self,model, cl): #
         if len(self.specifiedAttList) >= len(cl.specifiedAttList): #if the length of the specified attribute list for one classifier is greater than or equal to the that of the other, return false (classifier is more specific)
@@ -254,8 +238,11 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 if self.condition[i][1] > cl.condition[otherRef][1]:
                     return False
         return True #otherwise, return true 
+    
+    
+   
 #----------------------------------------------------------------------------------------------------------------------------
-# updateTimeStamp: XXX
+# updateTimeStamp: Sets the time stamp of the classifier.
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateTimeStamp(self, ts): #where does ts come from?
         """ Sets the time stamp of the classifier. """
@@ -264,99 +251,128 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 # uniformCrossover: XXX UPDATE
 #---------------------------------------------------------------------------------------------------------------------------- 
     def uniformCrossover(self,model,cl): #define the uniform crossover function 
-        p_self_specifiedAttList = copy.deepcopy(self.specifiedAttList) #A deep copy constructs a new compound object and then, recursively, inserts copies into it of the objects found in the original.
-        p_cl_specifiedAttList = copy.deepcopy(cl.specifiedAttList) #deep copy the attribute list of two parent rules 
+        if random.random() < 0.5: #50% of the time crossover the condition, 50% crossover the eventrange 
+            p_self_specifiedAttList = copy.deepcopy(self.specifiedAttList) #A deep copy constructs a new compound object and then, recursively, inserts copies into it of the objects found in the original.
+            p_cl_specifiedAttList = copy.deepcopy(cl.specifiedAttList) #deep copy the attribute list of two parent rules 
 
-        useAT = model.do_attribute_feedback and random.random() < model.AT.percent #do_attribute_feedback defaults to true - not sure where AT.percent comes from
+            useAT = model.do_attribute_feedback and random.random() < model.AT.percent #do_attribute_feedback defaults to true - not sure where AT.percent comes from
 
-        comboAttList = [] #create a combined attribute list 
-        for i in p_self_specifiedAttList: #for each in the specified attribute list
-            comboAttList.append(i) #append each to the combo list 
-        for i in p_cl_specifiedAttList: #for each in the other list
-            if i not in comboAttList: #if its not already in the combo list
-                comboAttList.append(i) #append it to the combo list
-            elif not model.env.formatData.attributeInfoType[i]:  # Attribute specified in both parents, and the attribute is discrete (then no reason to cross over)
-                comboAttList.remove(i)
-        comboAttList.sort() #sort the combined list 
+            comboAttList = [] #create a combined attribute list 
+            for i in p_self_specifiedAttList: #for each in the specified attribute list
+                comboAttList.append(i) #append each to the combo list 
+            for i in p_cl_specifiedAttList: #for each in the other list
+                if i not in comboAttList: #if its not already in the combo list
+                    comboAttList.append(i) #append it to the combo list
+                elif not model.env.formatData.attributeInfoType[i]:  # Attribute specified in both parents, and the attribute is discrete (then no reason to cross over)
+                    comboAttList.remove(i)
+            comboAttList.sort() #sort the combined list 
 
-        changed = False
-        for attRef in comboAttList: #for each attribute in the combo list
-            attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type (discrete/continuous)
-            if useAT: #if AT is true (default is)
-                probability = model.AT.getTrackProb()[attRef] #set the probability (see attribute_tracking.py)
-            else:
-                probability = 0.5
-
-            ref = 0
-            if attRef in p_self_specifiedAttList:
-                ref += 1
-            if attRef in p_cl_specifiedAttList:
-                ref += 1
-
-            if ref == 0:
-                pass
-            elif ref == 1:
-                if attRef in p_self_specifiedAttList and random.random() > probability:
-                    i = self.specifiedAttList.index(attRef)
-                    cl.condition.append(self.condition.pop(i))
-
-                    cl.specifiedAttList.append(attRef)
-                    self.specifiedAttList.remove(attRef)
-                    changed = True
-
-                if attRef in p_cl_specifiedAttList and random.random() < probability:
-                    i = cl.specifiedAttList.index(attRef)
-                    self.condition.append(cl.condition.pop(i))
-
-                    self.specifiedAttList.append(attRef)
-                    cl.specifiedAttList.remove(attRef)
-                    changed = True
-            else:
-                # Continuous Attribute
-                if attributeInfoType:
-                    i_cl1 = self.specifiedAttList.index(attRef)
-                    i_cl2 = cl.specifiedAttList.index(attRef)
-                    tempKey = random.randint(0, 3)
-                    if tempKey == 0:
-                        temp = self.condition[i_cl1][0]
-                        self.condition[i_cl1][0] = cl.condition[i_cl2][0]
-                        cl.condition[i_cl2][0] = temp
-                    elif tempKey == 1:
-                        temp = self.condition[i_cl1][1]
-                        self.condition[i_cl1][1] = cl.condition[i_cl2][1]
-                        cl.condition[i_cl2][1] = temp
-                    else:
-                        allList = self.condition[i_cl1] + cl.condition[i_cl2]
-                        newMin = min(allList)
-                        newMax = max(allList)
-                        if tempKey == 2:
-                            self.condition[i_cl1] = [newMin, newMax]
-                            cl.condition.pop(i_cl2)
-
-                            cl.specifiedAttList.remove(attRef)
-                        else:
-                            cl.condition[i_cl2] = [newMin, newMax]
-                            self.condition.pop(i_cl1)
-
-                            self.specifiedAttList.remove(attRef)
-
-                # Discrete Attribute
-                else:
-                    pass
-
-        #Specification Limit Check
-        if len(self.specifiedAttList) > model.rule_specificity_limit:
-            self.specLimitFix(model,self)
-        if len(cl.specifiedAttList) > model.rule_specificity_limit:
-            self.specLimitFix(model,cl)
-
-        tempList1 = copy.deepcopy(p_self_specifiedAttList)
-        tempList2 = copy.deepcopy(cl.specifiedAttList)
-        tempList1.sort()
-        tempList2.sort()
-        if changed and (tempList1 == tempList2):
             changed = False
-        return changed
+            for attRef in comboAttList: #for each attribute in the combo list
+                attributeInfoType = model.env.formatData.attributeInfoType[attRef] #set the type (discrete/continuous)
+                if useAT: #if AT is true (default is, ATTRIBUTE CROSSOVER PROBAILITY - ATTRIBUTE FEEDBACK)
+                    probability = model.AT.getTrackProb()[attRef] #set the probability (see attribute_tracking.py)
+                else: #ATTRIBUTE CROSSOVER PROBAILITY - NORMAL CROSSOVER
+                    probability = 0.5
+
+                ref = 0
+                if attRef in p_self_specifiedAttList:
+                    ref += 1
+                if attRef in p_cl_specifiedAttList:
+                    ref += 1
+
+                if ref == 0:
+                    pass
+                elif ref == 1:
+                    if attRef in p_self_specifiedAttList and random.random() > probability:
+                        i = self.specifiedAttList.index(attRef)
+                        cl.condition.append(self.condition.pop(i))
+
+                        cl.specifiedAttList.append(attRef)
+                        self.specifiedAttList.remove(attRef)
+                        changed = True
+
+                    if attRef in p_cl_specifiedAttList and random.random() < probability:
+                        i = cl.specifiedAttList.index(attRef)
+                        self.condition.append(cl.condition.pop(i))
+
+                        self.specifiedAttList.append(attRef)
+                        cl.specifiedAttList.remove(attRef)
+                        changed = True
+                else:
+                    # Continuous Attribute
+                    if attributeInfoType:
+                        i_cl1 = self.specifiedAttList.index(attRef)
+                        i_cl2 = cl.specifiedAttList.index(attRef)
+                        tempKey = random.randint(0, 3)
+                        if tempKey == 0:
+                            temp = self.condition[i_cl1][0]
+                            self.condition[i_cl1][0] = cl.condition[i_cl2][0]
+                            cl.condition[i_cl2][0] = temp
+                        elif tempKey == 1:
+                            temp = self.condition[i_cl1][1]
+                            self.condition[i_cl1][1] = cl.condition[i_cl2][1]
+                            cl.condition[i_cl2][1] = temp
+                        else:
+                            allList = self.condition[i_cl1] + cl.condition[i_cl2]
+                            newMin = min(allList)
+                            newMax = max(allList)
+                            if tempKey == 2:
+                                self.condition[i_cl1] = [newMin, newMax]
+                                cl.condition.pop(i_cl2)
+
+                                cl.specifiedAttList.remove(attRef)
+                            else:
+                                cl.condition[i_cl2] = [newMin, newMax]
+                                self.condition.pop(i_cl1)
+
+                                self.specifiedAttList.remove(attRef)
+
+                    # Discrete Attribute
+                    else:
+                        pass
+
+            #Specification Limit Check
+            if len(self.specifiedAttList) > model.rule_specificity_limit:
+                self.specLimitFix(model,self)
+            if len(cl.specifiedAttList) > model.rule_specificity_limit:
+                self.specLimitFix(model,cl)
+
+            tempList1 = copy.deepcopy(p_self_specifiedAttList)
+            tempList2 = copy.deepcopy(cl.specifiedAttList)
+            tempList1.sort()
+            tempList2.sort()
+            if changed and (tempList1 == tempList2):
+                changed = False
+            return changed
+        else: 
+            return self.eventCrossover(cl, phenotype)
+        
+#----------------------------------------------------------------------------------------------------------------------------
+# eventCrossover: Crossover the continuous event range
+#----------------------------------------------------------------------------------------------------------------------------      
+        
+    def eventCrossover(self, cl, eventTime):
+        changed = False
+        if self.eventInterval[0] == cl.eventInterval[0] and self.eventInterval[1] == cl.eventInterval[1]:
+            return changed
+        else:
+            tempKey = random.random() < 0.5 #Make random choice between 4 scenarios, Swap minimums, Swap maximums, Children preserve parent phenotypes.
+            if tempKey: #Swap minimum
+                temp = self.eventInterval[0]
+                self.eventInterval[0] = cl.eventInterval[0]
+                cl.eventInterval[0] = temp
+                changed = True
+            elif tempKey:  #Swap maximum
+                temp = self.eventInterval[1]
+                self.eventInterval[1] = cl.eventInterval[1]
+                cl.eventInterval[1] = temp
+                changed = True
+            if not self.eventInterval[0] < eventTime or not self.eventInterval[1] > eventTime: #for these next two statements, print "event interval crossover range error" if eventTime does not fall within the two intervals
+                print('event interval crossover range error')
+            if not cl.eventInterval[0] < eventTime or not cl.eventInterval[1] > eventTime:
+                print('eventInterval crossover range error')
+        return changed        
 #----------------------------------------------------------------------------------------------------------------------------
 # specLimitFix: XXX
 #---------------------------------------------------------------------------------------------------------------------------- 
@@ -396,7 +412,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         """  Sets the fitness of the classifier. """
         self.fitness = fit
 #----------------------------------------------------------------------------------------------------------------------------
-# mutation: XXX
+# mutation:  Mutates the condition of the classifier. Also handles phenotype mutation. This is a niche mutation, which means that the resulting classifier will still match the current instance. 
 #---------------------------------------------------------------------------------------------------------------------------- 
     def mutation(self,model,state):
         """ Mutates the condition of the classifier. Also handles phenotype mutation. This is a niche mutation, which means that the resulting classifier will still match the current instance.  """
