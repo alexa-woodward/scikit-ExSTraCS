@@ -41,7 +41,7 @@ class StringEnumerator:
         self.delete_all_instances_without_phenotype()
         
 #--------------------------------------------------------------------------------------------------------------------
-# do_correct_set_subsumption: XXX
+# print_invalid_attributes: prints invalid attributes - any attribute with a header name "NA"
 #--------------------------------------------------------------------------------------------------------------------       
    def print_invalid_attributes(self):
         print("ALL INVALID ATTRIBUTES & THEIR DISTINCT VALUES")
@@ -65,30 +65,37 @@ class StringEnumerator:
 
         distinctValues = []
         isInvalid = False
-        for instIndex in range(len(self.dataPhenotypes)):
-            val = self.dataPhenotypes[instIndex]
+        for instIndex in range(len(self.dataEventTimes)):
+            val = self.dataEventTimes[instIndex]
             if not val in distinctValues and val != "NA":
-                distinctValues.append(self.dataPhenotypes[instIndex])
+                distinctValues.append(self.dataEventTimes[instIndex])
             if val != "NA":
                 try:
                     float(val)
                 except:
                     isInvalid = True
         if isInvalid:
-            print(str(self.classLabel)+" (the phenotype): ",end="")
+            print(str(self.classLabel)+" (the EventTime): ",end="")
             for i in distinctValues:
                 print(str(i)+"\t",end="")
             print()
-
+            
+            ###could add here another chunk to identify invalid eventStatus values
+#--------------------------------------------------------------------------------------------------------------------
+# change_class_name: lets user change the class label if it is the same as one of the attribute labels
+#--------------------------------------------------------------------------------------------------------------------   
     def change_class_name(self,newName):
         if newName in self.dataHeaders:
             raise Exception("New Class Name Cannot Be An Already Existing Data Header Name")
-        if self.classLabel in self.map.keys():
-            self.map[self.newName] = self.map.pop(self.classLabel)
-        self.classLabel = newName
-
+        if self.survivalTime in self.map.keys():
+            self.map[self.newName] = self.map.pop(self.survivalTime)
+        self.survivalTime = newName
+        
+#--------------------------------------------------------------------------------------------------------------------
+# change_header_name: raises an error if new class names already exists 
+#-------------------------------------------------------------------------------------------------------------------- 
     def change_header_name(self,currentName,newName):
-        if newName in self.dataHeaders or newName == self.classLabel:
+        if newName in self.dataHeaders or newName == self.survivalTime:
             raise Exception("New Class Name Cannot Be An Already Existing Data Header or Phenotype Name")
         if currentName in self.dataHeaders:
             headerIndex = np.where(self.dataHeaders == currentName)[0][0]
@@ -97,7 +104,10 @@ class StringEnumerator:
                 self.map[newName] = self.map.pop(currentName)
         else:
             raise Exception("Current Header Doesn't Exist")
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# add_attribute_converter: Convers attributes to XXX
+#-------------------------------------------------------------------------------------------------------------------- 
     def add_attribute_converter(self,headerName,array):#map is an array of strings, ordered by how it is to be enumerated enumeration
         if headerName in self.dataHeaders and not (headerName in self.map):
             newAttributeConverter = {}
@@ -105,13 +115,19 @@ class StringEnumerator:
                 if str(array[index]) != "NA" and str(array[index]) != "" and str(array[index]) != "NaN":
                     newAttributeConverter[str(array[index])] = str(index)
             self.map[headerName] = newAttributeConverter
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# add_attribute_converter_map
+#-------------------------------------------------------------------------------------------------------------------- 
     def add_attribute_converter_map(self,headerName,map):
         if headerName in self.dataHeaders and not (headerName in self.map) and not("" in map) and not("NA" in map) and not("NaN" in map):
             self.map[headerName] = map
         else:
             raise Exception("Invalid Map")
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def add_attribute_converter_random(self,headerName):
         if headerName in self.dataHeaders and not (headerName in self.map):
             headerIndex = np.where(self.dataHeaders == headerName)[0][0]
@@ -120,14 +136,20 @@ class StringEnumerator:
                 if not(instance[headerIndex] in uniqueItems) and instance[headerIndex] != "NA":
                     uniqueItems.append(instance[headerIndex])
             self.add_attribute_converter(headerName,np.array(uniqueItems))
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def add_class_converter(self,array):
         if not (self.classLabel in self.map.keys()):
             newAttributeConverter = {}
             for index in range(len(array)):
                 newAttributeConverter[str(array[index])] = str(index)
             self.map[self.classLabel] = newAttributeConverter
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def add_class_converter_random(self):
         if not (self.classLabel in self.map.keys()):
             uniqueItems = []
@@ -135,7 +157,10 @@ class StringEnumerator:
                 if not (instance in uniqueItems) and instance != "NA":
                     uniqueItems.append(instance)
             self.add_class_converter(np.array(uniqueItems))
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def convert_all_attributes(self):
         for attribute in self.dataHeaders:
             if attribute in self.map.keys():
@@ -143,13 +168,19 @@ class StringEnumerator:
                 for state in self.dataFeatures:#goes through each instance's state
                     if (state[i] in self.map[attribute].keys()):
                         state[i] = self.map[attribute][state[i]]
-
+                        
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
         if self.classLabel in self.map.keys():
             for state in self.dataPhenotypes:
                 if (state in self.map[self.classLabel].keys()):
                     i = np.where(self.dataPhenotypes == state)
                     self.dataPhenotypes[i] = self.map[self.classLabel][state]
-
+                    
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def delete_attribute(self,headerName):
         if headerName in self.dataHeaders:
             i = np.where(headerName == self.dataHeaders)[0][0]
@@ -164,7 +195,10 @@ class StringEnumerator:
             self.dataFeatures = np.array(newFeatures)
         else:
             raise Exception("Header Doesn't Exist")
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def delete_all_instances_without_header_data(self,headerName):
         newFeatures = []
         newPhenotypes = []
@@ -178,7 +212,10 @@ class StringEnumerator:
 
         self.dataFeatures = np.array(newFeatures)
         self.dataPhenotypes = np.array(newPhenotypes)
-
+        
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def delete_all_instances_without_phenotype(self):
         newFeatures = []
         newPhenotypes = []
@@ -190,7 +227,10 @@ class StringEnumerator:
 
         self.dataFeatures = np.array(newFeatures)
         self.dataPhenotypes = np.array(newPhenotypes)
-
+        
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def print(self):
         isFullNumber = self.check_is_full_numeric()
         print("Converted Data Features and Phenotypes")
@@ -214,7 +254,10 @@ class StringEnumerator:
             else:
                 print("NA")
         print()
-
+        
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def print_attribute_conversions(self):
         print("Changed Attribute Conversions")
         for headerName,conversions in self.map:
@@ -223,7 +266,10 @@ class StringEnumerator:
                 print("\tOriginal: "+original+" Converted: "+numberVal)
             print()
         print()
-
+        
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def check_is_full_numeric(self):
         try:
             for instance in self.dataFeatures:
@@ -238,7 +284,10 @@ class StringEnumerator:
             return False
 
         return True
-
+    
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------------------------------------------------- 
     def get_params(self):
         if not(self.check_is_full_numeric()):
             raise Exception("Features and Phenotypes must be fully numeric")
