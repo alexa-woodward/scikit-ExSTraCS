@@ -357,8 +357,8 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.timer.stopTimeInit()
 
         while self.iterationCount < self.learning_iterations:
-            state_phenotype = self.env.getTrainInstance()
-            self.runIteration(state_phenotype)
+            state_event = self.env.getTrainInstance()
+            self.runIteration(state_event)
 
             self.timer.startTimeEvaluation()
             if self.iterationCount % aveGeneralityFreq == aveGeneralityFreq - 1:
