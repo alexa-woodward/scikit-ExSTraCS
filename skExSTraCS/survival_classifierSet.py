@@ -8,10 +8,13 @@ class ClassifierSet:
         self.matchSet = []  # List of references to rules in population that match
         self.correctSet = []  # List of references to rules in population that both match and specify correct phenotype
         self.microPopSize = 0
-
-    def makeMatchSet(self,model,state_phenotype):
-        state = state_phenotype[0]
-        phenotype = state_phenotype[1]
+        
+#--------------------------------------------------------------------------------------------------------------------
+# makeMatchSet: Constructs a match set from the population. Covering is initiated if the match set is empty or a rule with the current correct eventRange is absent.
+#--------------------------------------------------------------------------------------------------------------------
+    def makeMatchSet(self,model,state_event):
+        state = state_event[0]
+        eventTime = state_event[1]
         doCovering = True
         setNumerositySum = 0
 
@@ -24,22 +27,25 @@ class ClassifierSet:
                 self.matchSet.append(i)
                 setNumerositySum += cl.numerosity
 
-                if cl.phenotype == phenotype:
-                    doCovering = False
+                if float(cl.eventInterval[0]) <= float(eventTime) <= float(cl.eventInterval[1]):   # Check that event time is within the rule event interval
+                        doCovering = False
 
         model.timer.stopTimeMatching()
 
         model.timer.startTimeCovering()
         while doCovering:
             newCl = Classifier(model)
-            newCl.initializeByCovering(model,setNumerositySum+1,state,phenotype)
+            newCl.initializeByCovering(model,setNumerositySum+1,state,eventTime)
             if len(newCl.specifiedAttList) > 0: #ADDED CHECK TO PREVENT FULLY GENERALIZED RULES
                 self.addClassifierToPopulation(model,newCl,True)
                 self.matchSet.append(len(self.popSet)-1)
                 model.trackingObj.coveringCount += 1
                 doCovering = False
         model.timer.stopTimeCovering()
-
+        
+#--------------------------------------------------------------------------------------------------------------------
+# addClassifierToPopulation: Adds a classifier to the set and increases the numerositySum value accordingly.
+#--------------------------------------------------------------------------------------------------------------------        
     def addClassifierToPopulation(self,model,cl,covering):
         model.timer.startTimeAdd()
         oldCl = None
@@ -52,21 +58,28 @@ class ClassifierSet:
             self.popSet.append(cl)
             self.microPopSize += 1
         model.timer.stopTimeAdd()
-
+        
+#--------------------------------------------------------------------------------------------------------------------
+# getIdenticalClassifier: Looks for an identical classifier in the population.
+#--------------------------------------------------------------------------------------------------------------------    
     def getIdenticalClassifier(self,newCl):
         for cl in self.popSet:
             if newCl.equals(cl):
                 return cl
         return None
 
-    def makeCorrectSet(self,phenotype):
+#--------------------------------------------------------------------------------------------------------------------
+# makeCorrectSet: Constructs a correct set out of the given match set. 
+#--------------------------------------------------------------------------------------------------------------------    
+    def makeCorrectSet(self,eventTime): #If the eventTime is within the rule eventInterval, append to the correct set.
         for i in range(len(self.matchSet)):
             ref = self.matchSet[i]
-            if self.popSet[ref].phenotype == phenotype:
-                self.correctSet.append(ref)
-
+            if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
+                    self.correctSet.append(ref)
+#--------------------------------------------------------------------------------------------------------------------
+# updateSets: Updates all relevant parameters in the current match and correct sets.
+#--------------------------------------------------------------------------------------------------------------------    
     def updateSets(self,model):
-        """ Updates all relevant parameters in the current match and correct sets. """
         matchSetNumerosity = 0
         for ref in self.matchSet:
             matchSetNumerosity += self.popSet[ref].numerosity
@@ -79,7 +92,10 @@ class ClassifierSet:
 
             self.popSet[ref].updateAccuracy()
             self.popSet[ref].updateFitness(model)
-
+            
+#--------------------------------------------------------------------------------------------------------------------
+# do_correct_set_subsumption: XXX
+#--------------------------------------------------------------------------------------------------------------------    
     def do_correct_set_subsumption(self,model):
         subsumer = None
         for ref in self.correctSet:
@@ -101,13 +117,17 @@ class ClassifierSet:
                     self.deleteFromCorrectSet(ref)
                     i -= 1
                 i+=1
-
+                
+#--------------------------------------------------------------------------------------------------------------------
+# removeMacroClassifier: Removes the specified (macro-) classifier from the population.
+#--------------------------------------------------------------------------------------------------------------------    
     def removeMacroClassifier(self, ref):
-        """ Removes the specified (macro-) classifier from the population. """
         self.popSet.pop(ref)
 
+#--------------------------------------------------------------------------------------------------------------------
+# deleteFromMatchSet: Delete reference to classifier in population, contained in self.matchSet
+#--------------------------------------------------------------------------------------------------------------------    
     def deleteFromMatchSet(self, deleteRef):
-        """ Delete reference to classifier in population, contained in self.matchSet."""
         if deleteRef in self.matchSet:
             self.matchSet.remove(deleteRef)
         # Update match set reference list--------
@@ -115,7 +135,10 @@ class ClassifierSet:
             ref = self.matchSet[j]
             if ref > deleteRef:
                 self.matchSet[j] -= 1
-
+                
+#--------------------------------------------------------------------------------------------------------------------
+# deleteFromCorrectSet: Delete reference to classifier in population, contained in self.matchSet
+#--------------------------------------------------------------------------------------------------------------------    
     def deleteFromCorrectSet(self, deleteRef):
         """ Delete reference to classifier in population, contained in self.matchSet."""
         if deleteRef in self.correctSet:
@@ -126,7 +149,10 @@ class ClassifierSet:
             if ref > deleteRef:
                 self.correctSet[j] -= 1
 
-    def runGA(self,model,state,phenotype):
+#--------------------------------------------------------------------------------------------------------------------
+# runGA: The genetic discovery mechanism in ExSTraCS is controlled here. 
+#--------------------------------------------------------------------------------------------------------------------    
+    def runGA(self,model,state,eventTime):
         if model.iterationCount - self.getIterStampAverage() < model.theta_GA:
             return
         self.setIterStamps(model.iterationCount)
@@ -145,7 +171,9 @@ class ClassifierSet:
             clP2 = selectList[1]
         model.timer.stopTimeSelection()
 
-        #Create Offspring Copies
+        #-------------------------------------------------------
+        # INITIALIZE OFFSPRING 
+        #-------------------------------------------------------
         cl1 = Classifier(model)
         cl1.initializeByCopy(clP1,model.iterationCount)
         cl2 = Classifier(model)
@@ -154,7 +182,9 @@ class ClassifierSet:
         else:
             cl2.initializeByCopy(clP2,model.iterationCount)
 
-        #Crossover
+        #-------------------------------------------------------
+        # CROSSOVER OPERATOR - Uniform Crossover Implemented (i.e. all attributes have equal probability of crossing over between two parents)
+        #-----------------------------------------------------
         if not cl1.equals(cl2) and random.random() < model.chi:
             model.timer.startTimeCrossover()
             changed = cl1.uniformCrossover(model,cl2)
@@ -169,10 +199,12 @@ class ClassifierSet:
             cl1.setFitness(model.fitness_reduction * cl1.fitness)
             cl2.setFitness(model.fitness_reduction * cl2.fitness)
 
-        #Mutation
+        #-------------------------------------------------------
+        # MUTATION OPERATOR 
+        #-------------------------------------------------------
         model.timer.startTimeMutation()
-        nowchanged = cl1.mutation(model,state)
-        howaboutnow = cl2.mutation(model,state)
+        nowchanged = cl1.mutation(model,state,eventTime)
+        howaboutnow = cl2.mutation(model,state,eventTime)
         model.timer.stopTimeMutation()
 
         if model.env.formatData.continuousCount > 0:
@@ -188,6 +220,9 @@ class ClassifierSet:
                 model.trackingObj.crossOverCount += 1
             self.insertDiscoveredClassifiers(model,cl1, cl2, clP1, clP2) #Includes subsumption if activated.
 
+#--------------------------------------------------------------------------------------------------------------------
+# insertDiscoveredClassifiers: 
+#--------------------------------------------------------------------------------------------------------------------    
     def insertDiscoveredClassifiers(self,model,cl1,cl2,clP1,clP2):
         if model.do_GA_subsumption:
             model.timer.startTimeSubsumption()
@@ -202,6 +237,9 @@ class ClassifierSet:
             if len(cl2.specifiedAttList) > 0:
                 self.addClassifierToPopulation(model,cl2,False)
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------               
     def subsumeClassifier(self, model,cl, cl1P, cl2P):
         """ Tries to subsume a classifier in the parents. If no subsumption is possible it tries to subsume it in the current set. """
         if cl1P!=None and cl1P.subsumes(model,cl):
@@ -216,6 +254,9 @@ class ClassifierSet:
             if len(cl.specifiedAttList) > 0:
                 self.addClassifierToPopulation(model, cl, False)
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def selectClassifierRW(self):
         setList = copy.deepcopy(self.correctSet)
 
@@ -244,6 +285,9 @@ class ClassifierSet:
 
         return selectList
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def getFitnessSum(self, setList):
         """ Returns the sum of the fitnesses of all classifiers in the set. """
         sumCl = 0.0
@@ -252,6 +296,9 @@ class ClassifierSet:
             sumCl += self.popSet[ref].fitness
         return sumCl
 
+#--------------------------------------------------------------------------------------------------------------------
+# selectClassifierT: Selects parents using tournament selection according to the fitness of the classifiers
+#--------------------------------------------------------------------------------------------------------------------
     def selectClassifierT(self,model):
         selectList = [None, None]
         currentCount = 0
@@ -274,7 +321,9 @@ class ClassifierSet:
             currentCount += 1
 
         return selectList
-
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def getIterStampAverage(self):
         """ Returns the average of the time stamps in the correct set. """
         sumCl=0
@@ -288,6 +337,9 @@ class ClassifierSet:
         else:
             return 0
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def getInitStampAverage(self):
         sumCl = 0.0
         numSum = 0.0
@@ -300,6 +352,9 @@ class ClassifierSet:
         else:
             return 0
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------        
     def setIterStamps(self, iterationCount):
         """ Sets the time stamp of all classifiers in the set to the current time. The current time
         is the number of exploration steps executed so far.  """
@@ -307,12 +362,18 @@ class ClassifierSet:
             ref = self.correctSet[i]
             self.popSet[ref].updateTimeStamp(iterationCount)
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------            
     def deletion(self,model):
         model.timer.startTimeDeletion()
         while self.microPopSize > model.N:
             self.deleteFromPopulation(model)
         model.timer.stopTimeDeletion()
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def deleteFromPopulation(self,model):
         meanFitness = self.getPopFitnessSum() / float(self.microPopSize)
 
@@ -345,6 +406,9 @@ class ClassifierSet:
                     model.trackingObj.deletionCount += 1
                 return
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------            
     def getPopFitnessSum(self):
         """ Returns the sum of the fitnesses of all classifiers in the set. """
         sumCl=0.0
@@ -352,11 +416,17 @@ class ClassifierSet:
             sumCl += cl.fitness *cl.numerosity
         return sumCl
 
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def clearSets(self):
         """ Clears out references in the match and correct sets for the next learning iteration. """
         self.matchSet = []
         self.correctSet = []
-
+        
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def getAveGenerality(self,model):
         genSum = 0
         for cl in self.popSet:
@@ -366,13 +436,19 @@ class ClassifierSet:
         else:
             aveGenerality = genSum/float(self.microPopSize)
         return aveGenerality
-
+    
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def makeEvalMatchSet(self,model,state):
         for i in range(len(self.popSet)):
             cl = self.popSet[i]
             if cl.match(model,state):
                 self.matchSet.append(i)
-
+                
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def getAttributeSpecificityList(self,model):
         attributeSpecList = []
         for i in range(model.env.formatData.numAttributes):
@@ -381,7 +457,10 @@ class ClassifierSet:
             for ref in cl.specifiedAttList:
                 attributeSpecList[ref] += cl.numerosity
         return attributeSpecList
-
+    
+#--------------------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------------------
     def getAttributeAccuracyList(self,model):
         attributeAccList = []
         for i in range(model.env.formatData.numAttributes):
