@@ -248,9 +248,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         """ Sets the time stamp of the classifier. """
         self.timeStampGA = ts
 #----------------------------------------------------------------------------------------------------------------------------
-# uniformCrossover: Started updating 11/29. see code_notes for questions
+# uniformCrossover: Started updating 11/29. see code_notes for questions. calls "eventCrossover" below, 50% of the time 
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def uniformCrossover(self,model,cl): #define the uniform crossover function 
+    def uniformCrossover(self,model,cl): 
         if random.random() < 0.5: #50% of the time crossover the condition, 50% crossover the eventrange 
             p_self_specifiedAttList = copy.deepcopy(self.specifiedAttList) #A deep copy constructs a new compound object and then, recursively, inserts copies into it of the objects found in the original.
             p_cl_specifiedAttList = copy.deepcopy(cl.specifiedAttList) #deep copy the attribute list of two parent rules 
@@ -346,7 +346,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 changed = False
             return changed
         else: 
-            return self.eventCrossover(cl, phenotype)
+            return self.eventCrossover(cl, eventTime)
         
 #----------------------------------------------------------------------------------------------------------------------------
 # eventCrossover: Crossover the continuous event interval
@@ -400,13 +400,13 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 cl.specifiedAttList.remove(j)
                 cl.condition.pop(i)  # buildMatch handles both discrete and continuous attributes
 #----------------------------------------------------------------------------------------------------------------------------
-# setAccuracy: XXX
+# setAccuracy: Sets the accuracy of the classifier
 #---------------------------------------------------------------------------------------------------------------------------- 
     def setAccuracy(self, acc):
         """ Sets the accuracy of the classifier """
         self.accuracy = acc
 #----------------------------------------------------------------------------------------------------------------------------
-# setFitness: XXX
+# setFitness: Sets the fitness of the classifier
 #---------------------------------------------------------------------------------------------------------------------------- 
     def setFitness(self, fit):
         """  Sets the fitness of the classifier. """
@@ -441,7 +441,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             highLim = 1
 
         # Get new rule specificity.
-        newRuleSpec = random.randint(lowLim, highLim)
+        newRuleSpec = random.randint(lowLim, highLim) #are we going to keep the same number of attributes, increase (increase specificity) or decrease?
 
         # MAINTAIN SPECIFICITY
         if newRuleSpec == len(self.specifiedAttList) and random.random() < (1 - model.mu):
@@ -519,10 +519,58 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                         changed = True
                 else:
                     self.mutateContinuousAttributes(model,useAT,j)
+                    
+        #-------------------------------------------------------
+        # MUTATE PHENOTYPE
+        #-------------------------------------------------------
+        nowChanged = self.continuousEventMutation(eventTime) #NOTE: Must mutate to still include true current value.
+        if changed:# or nowChanged:
+            return True
 
-        return changed
+    
 #----------------------------------------------------------------------------------------------------------------------------
-# selectGeneralizeRW: XXX
+# continuousEventMutation: Mutate this rule's continuous phenotype
+#----------------------------------------------------------------------------------------------------------------------------     
+    
+    def continuousEventMutation(self, eventTime):
+        """ Mutate this rule's continuous eventTime. """
+        #Continuous Phenotype Crossover------------------------------------
+        changed = False
+        if random.random() < cons.upsilon: #Mutate continuous phenotype
+            eventRange = self.eventInterval[1] - self.phenotype[0]
+            mutateRange = random.random()*0.5*eventRange
+            tempKey = random.randint(0,2) #Make random choice between 3 scenarios, mutate minimums, mutate maximums, mutate both
+            if tempKey == 0: #Mutate minimum 
+                if random.random() > 0.5 or self.eventInterval[0] + mutateRange <= eventTime: #Checks that mutated range still contains current phenotype
+                    self.eventInterval[0] += mutateRange
+                else: #Subtract
+                    self.eventInterval[0] -= mutateRange
+                changed = True
+            elif tempKey == 1: #Mutate maximum
+                if random.random() > 0.5 or self.eventInterval[1] - mutateRange >= eventTime: #Checks that mutated range still contains current phenotype
+                    self.eventInterval[1] -= mutateRange
+                else: #Subtract
+                    self.eventInterval[1] += mutateRange
+                changed = True
+            else: #mutate both
+                if random.random() > 0.5 or self.eventInterval[0] + mutateRange <= eventTime: #Checks that mutated range still contains current phenotype
+                    self.eventInterval[0] += mutateRange
+                else: #Subtract
+                    self.eventInterval[0] -= mutateRange
+                if random.random() > 0.5 or self.eventInterval[1] - mutateRange >= eventTime: #Checks that mutated range still contains current phenotype
+                    self.eventInterval[1] -= mutateRange
+                else: #Subtract
+                    self.eventInterval[1] += mutateRange
+                changed = True
+            
+            #Repair range - such that min specified first, and max second.
+            self.eventInterval.sort()
+            #---------------------------------------------------------------------
+        return changed 
+    
+    
+#----------------------------------------------------------------------------------------------------------------------------
+# selectGeneralizeRW: EK applied to the selection of an attribute to generalize for mutation.
 #---------------------------------------------------------------------------------------------------------------------------- 
     def selectGeneralizeRW(self,model,count):
         probList = []
@@ -556,7 +604,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     #         currentCount += 1
     #     return selectList
 #----------------------------------------------------------------------------------------------------------------------------
-# selectSpecifyRW: XXX
+# selectSpecifyRW: EK applied to the selection of an attribute to specify for mutation.
 #---------------------------------------------------------------------------------------------------------------------------- 
     def selectSpecifyRW(self,model,count):
         pickList = list(range(model.env.formatData.numAttributes))
@@ -645,7 +693,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             pass
 
 #----------------------------------------------------------------------------------------------------------------------------
-# rangeCheck: XXX
+# rangeCheck: Checks and prevents the scenario where a continuous attributes specified in a rule has a range that fully encloses the training set range for that attribute.
 #---------------------------------------------------------------------------------------------------------------------------- 
     def rangeCheck(self,model):
         """ Checks and prevents the scenario where a continuous attributes specified in a rule has a range that fully encloses the training set range for that attribute."""
@@ -666,7 +714,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 else:
                     pass
 #----------------------------------------------------------------------------------------------------------------------------
-# getDelProp: XXX
+# getDelProp:  Returns the vote for deletion of the classifier.
 #---------------------------------------------------------------------------------------------------------------------------- 
     def getDelProp(self, model, meanFitness):
         """  Returns the vote for deletion of the classifier. """
