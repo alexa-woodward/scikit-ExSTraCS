@@ -289,7 +289,7 @@ class ClassifierSet:
         return selectList
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# getFitnessSum: Returns the sum of the fitnesses of all classifiers in the set
 #--------------------------------------------------------------------------------------------------------------------
     def getFitnessSum(self, setList):
         """ Returns the sum of the fitnesses of all classifiers in the set. """
@@ -410,7 +410,7 @@ class ClassifierSet:
                 return
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# getPopFitnessSum: Returns the sum of the fitnesses of all classifiers in the set.
 #--------------------------------------------------------------------------------------------------------------------            
     def getPopFitnessSum(self):
         """ Returns the sum of the fitnesses of all classifiers in the set. """
@@ -420,7 +420,7 @@ class ClassifierSet:
         return sumCl
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# clearSets: Clears out references in the match and correct sets for the next learning iteration.
 #--------------------------------------------------------------------------------------------------------------------
     def clearSets(self):
         """ Clears out references in the match and correct sets for the next learning iteration. """
@@ -428,7 +428,7 @@ class ClassifierSet:
         self.correctSet = []
         
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# getAveGenerality: determine the average generality of rules in the population (# of attributes specified in each rule)
 #--------------------------------------------------------------------------------------------------------------------
     def getAveGenerality(self,model):
         genSum = 0
@@ -441,7 +441,7 @@ class ClassifierSet:
         return aveGenerality
     
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# makeEvalMatchSet: Constructs a match set for evaluation purposes which does not activate either covering or deletion.
 #--------------------------------------------------------------------------------------------------------------------
     def makeEvalMatchSet(self,model,state):
         for i in range(len(self.popSet)):
@@ -450,7 +450,7 @@ class ClassifierSet:
                 self.matchSet.append(i)
                 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+#  getAttributeSpecificityList: Determine the population-wide frequency of attribute specification
 #--------------------------------------------------------------------------------------------------------------------
     def getAttributeSpecificityList(self,model):
         attributeSpecList = []
@@ -462,7 +462,7 @@ class ClassifierSet:
         return attributeSpecList
     
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# getAttributeAccuracyList: Get accuracy weighted specification
 #--------------------------------------------------------------------------------------------------------------------
     def getAttributeAccuracyList(self,model):
         attributeAccList = []
