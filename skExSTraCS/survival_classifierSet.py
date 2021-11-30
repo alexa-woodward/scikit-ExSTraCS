@@ -8,6 +8,7 @@ class ClassifierSet:
         self.matchSet = []  # List of references to rules in population that match
         self.correctSet = []  # List of references to rules in population that both match and specify correct phenotype
         self.microPopSize = 0
+        self.aveEventRange = 0.0
         
 #--------------------------------------------------------------------------------------------------------------------
 # makeMatchSet: Constructs a match set from the population. Covering is initiated if the match set is empty or a rule with the current correct eventRange is absent.
@@ -432,13 +433,25 @@ class ClassifierSet:
 #--------------------------------------------------------------------------------------------------------------------
     def getAveGenerality(self,model):
         genSum = 0
+        sumRuleRange = 0
         for cl in self.popSet:
             genSum += ((model.env.formatData.numAttributes - len(cl.condition))/float(model.env.formatData.numAttributes))*cl.numerosity
         if self.microPopSize == 0:
             aveGenerality = 0
         else:
             aveGenerality = genSum/float(self.microPopSize)
+        for cl in self.popSet:
+                high = cl.eventInterval[1]
+                low = cl.eventInterval[0]
+                if high > cons.env.formatData.eventList[1]:
+                    high = cons.env.formatData.eventList[1]
+                if low < cons.env.formatData.eventList[0]:
+                    low = cons.env.formatData.eventList[0]
+                sumRuleRange += (cl.eventInterval[1] - cl.eventInterval[0])*cl.numerosity
+            eventRange = cons.env.formatData.eventList[1] - cons.env.formatData.eventList[0]
+            self.aveEventRange = (sumRuleRange / float(self.microPopSize)) / float(eventRange)       
         return aveGenerality
+        
     
 #--------------------------------------------------------------------------------------------------------------------
 # makeEvalMatchSet: Constructs a match set for evaluation purposes which does not activate either covering or deletion.
