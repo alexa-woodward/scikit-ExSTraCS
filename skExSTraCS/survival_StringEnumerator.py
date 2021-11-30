@@ -256,7 +256,7 @@ class StringEnumerator:
         print()
         
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# print_attribute_conversions
 #-------------------------------------------------------------------------------------------------------------------- 
     def print_attribute_conversions(self):
         print("Changed Attribute Conversions")
@@ -268,7 +268,7 @@ class StringEnumerator:
         print()
         
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# check_is_full_numeric: checks to make sure all values are numeric
 #-------------------------------------------------------------------------------------------------------------------- 
     def check_is_full_numeric(self):
         try:
@@ -276,7 +276,10 @@ class StringEnumerator:
                 for value in instance:
                     if value != "NA":
                         float(value)
-            for value in self.dataPhenotypes:
+            for value in self.dataEventTimes:
+                if value != "NA":
+                    float(value)
+            for value in self.dataEventStatus:
                 if value != "NA":
                     float(value)
 
