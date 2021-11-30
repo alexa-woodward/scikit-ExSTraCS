@@ -221,7 +221,8 @@ class ClassifierSet:
             self.insertDiscoveredClassifiers(model,cl1, cl2, clP1, clP2) #Includes subsumption if activated.
 
 #--------------------------------------------------------------------------------------------------------------------
-# insertDiscoveredClassifiers: 
+# insertDiscoveredClassifiers: Inserts both discovered classifiers keeping the maximal size of the population and possibly doing GA subsumption. 
+       # Checks for default rule (i.e. rule with completely general condition) prevents such rules from being added to the population.
 #--------------------------------------------------------------------------------------------------------------------    
     def insertDiscoveredClassifiers(self,model,cl1,cl2,clP1,clP2):
         if model.do_GA_subsumption:
@@ -238,11 +239,11 @@ class ClassifierSet:
                 self.addClassifierToPopulation(model,cl2,False)
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# subsumeClassifier: Tries to subsume a classifier in the parents. If no subsumption is possible it tries to subsume it in the current set.
 #--------------------------------------------------------------------------------------------------------------------               
     def subsumeClassifier(self, model,cl, cl1P, cl2P):
         """ Tries to subsume a classifier in the parents. If no subsumption is possible it tries to subsume it in the current set. """
-        if cl1P!=None and cl1P.subsumes(model,cl):
+        if cl1P!=None and cl1P.subsumes(model,cl): #called from classifier.py
             self.microPopSize += 1
             cl1P.updateNumerosity(1)
             model.trackingObj.subsumptionCount+=1
@@ -255,7 +256,7 @@ class ClassifierSet:
                 self.addClassifierToPopulation(model, cl, False)
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# selectClassifierRW: Selects parents using roulette wheel selection according to the fitness of the classifiers.
 #--------------------------------------------------------------------------------------------------------------------
     def selectClassifierRW(self):
         setList = copy.deepcopy(self.correctSet)
@@ -282,7 +283,9 @@ class ClassifierSet:
             selectList = [self.popSet[setList[0]], self.popSet[setList[1]]]
         elif len(setList) == 1:
             selectList = [self.popSet[setList[0]], self.popSet[setList[0]]]
-
+        else:
+            print("ClassifierSet: Error in parent selection.")
+            
         return selectList
 
 #--------------------------------------------------------------------------------------------------------------------
@@ -322,7 +325,7 @@ class ClassifierSet:
 
         return selectList
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# getIterStampAverage: Returns the average of the time stamps in the correct set.
 #--------------------------------------------------------------------------------------------------------------------
     def getIterStampAverage(self):
         """ Returns the average of the time stamps in the correct set. """
@@ -338,7 +341,7 @@ class ClassifierSet:
             return 0
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# getInitStampAverage: Returns the averate inital time stamp of the classifiers 
 #--------------------------------------------------------------------------------------------------------------------
     def getInitStampAverage(self):
         sumCl = 0.0
@@ -353,7 +356,7 @@ class ClassifierSet:
             return 0
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# setIterStamps: Sets the time stamp of all classifiers in the set to the current time. The current time is the number of exploration steps executed so far.
 #--------------------------------------------------------------------------------------------------------------------        
     def setIterStamps(self, iterationCount):
         """ Sets the time stamp of all classifiers in the set to the current time. The current time
@@ -363,7 +366,7 @@ class ClassifierSet:
             self.popSet[ref].updateTimeStamp(iterationCount)
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# deletion: Returns the population size back to the maximum set by the user by deleting rules. 
 #--------------------------------------------------------------------------------------------------------------------            
     def deletion(self,model):
         model.timer.startTimeDeletion()
@@ -372,7 +375,7 @@ class ClassifierSet:
         model.timer.stopTimeDeletion()
 
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# deleteFromPopulation: Deletes one classifier in the population.  The classifier that will be deleted is chosen by roulette wheel selection considering the deletion vote. Returns the macro-classifier which got decreased by one micro-classifier. 
 #--------------------------------------------------------------------------------------------------------------------
     def deleteFromPopulation(self,model):
         meanFitness = self.getPopFitnessSum() / float(self.microPopSize)
