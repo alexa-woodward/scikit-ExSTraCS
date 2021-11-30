@@ -374,7 +374,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 print('eventInterval crossover range error')
         return changed        
 #----------------------------------------------------------------------------------------------------------------------------
-# specLimitFix: XXX
+# specLimitFix: Lowers classifier specificity to specificity limit.
 #---------------------------------------------------------------------------------------------------------------------------- 
     def specLimitFix(self, model, cl):
         """ Lowers classifier specificity to specificity limit. """
