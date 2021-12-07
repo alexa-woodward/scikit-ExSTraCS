@@ -4,28 +4,32 @@ import numpy as np
 
 class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     def __init__(self,model):
+        #Major Parameters --------------------------------------------------
         self.specifiedAttList = []
         self.condition = []
         self.eventStatus = None
-        self.eventTime = None
-        
-        ##addition for survival analysis
-        self.EvalTime = 0 #what should the initial value be? When will it get re-assigned? When drawing an instance also need to choose a ET at which to evaluate the instance...this will become ET
-
+        self.eventTime = None    
+    
         self.fitness = model.init_fitness
         self.accuracy = 0
         self.numerosity = 1
         self.aveMatchSetSize = None
         self.deletionProb = None
-
+        
+        #Experience Management ---------------------------------------------
         self.timeStampGA = None
         self.initTimeStamp = None
         self.epochComplete = False
-
+        
+        #Classifier Accuracy Tracking --------------------------------------
         self.matchCount = 0
         self.correctCount = 0
         self.matchCover = 0 #what are these? 
         self.correctCover = 0
+        
+        #Continuous Endpoint
+        self.errorSum = 0
+        self.errorCount = 0
         
 #----------------------------------------------------------------------------------------------------------------------------
 # initializeByCopy: XXX What is this doing? 
@@ -187,16 +191,58 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             pass
         else:
             self.correctCover += 1
+            
+#----------------------------------------------------------------------------------------------------------------------------
+# updateError: updates the error for a classifier until all instances have been seen
+#----------------------------------------------------------------------------------------------------------------------------             
+    def updateError(self,eventTime):
+        if not self.epochComplete:
+            high = self.eventInterval[1]
+            low = self.eventInterval[0]
+            if self.eventInterval[1] > self.eventList[1]:
+                high = self.eventList[1]
+            if self.eventInterval[0] < self.eventList[0]:
+                low = self.eventList[0]
+                
+            rangeCentroid = (high + low) / 2.0
+            error = abs(rangeCentroid - eventTime)  #this or self.eventTime?
+            adjustedError = error / (self.eventList[1] - self.eventList[0])
+
+            self.errorSum += adjustedError  #Error is fraction of total phenotype range (i.e. maximum possible error)
+            self.errorCount += 1        
+            
+#----------------------------------------------------------------------------------------------------------------------------
+# updateIncorrectError: adds the max error (1) to errorSum if the instance falls in [I] 
+#----------------------------------------------------------------------------------------------------------------------------                 
+    def updateIncorrectError(self):        
+        if not self.epochComplete:
+            self.errorSum += 1.0
+            self.errorCount += 1        
 #----------------------------------------------------------------------------------------------------------------------------
 # updateAccuracy: update the accuracy for a classifier. Going to change this so it's related to the ERROR. Might update to MFF
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateAccuracy(self):
-        self.accuracy = self.correctCount / float(self.matchCount)
+        """ Update the accuracy tracker """
+        self.accuracy = 1 - (self.errorSum/self.matchCover) # 1- average error based on range centroid.  Should be natural pressure to achieve narrow endpoint range.
+        if self.accuracy < 0:  #temporary code
+            print('error')
+            print(self.accuracy)
+            print(self.errorSum)
+            print(self.matchCover)
+            print(self.errorCount)
 #----------------------------------------------------------------------------------------------------------------------------
-# updateFitness: THIS WILL PROBABLY STAY THE SAME
+# updateFitness: 
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def updateFitness(self,model):
-        self.fitness = pow(self.accuracy, model.nu)
+#new as of 12/07, need to edit.
+     def updateFitness(self):
+        """ Update the fitness parameter. """ 
+         if (self.eventInterval[1]-self.eventInterval[0]) >= self.eventRange:
+             self.fitness = pow(0.0001, 5)
+         else:
+             if self.matchCover < 2 and self.epochComplete:
+                 self.fitness = pow(0.0001, 5)
+             else:
+                 self.fitness = pow(self.accuracy, model.nu) #- (self.phenotype[1]-self.phenotype[0])/cons.env.formatData.phenotypeRange)
 #----------------------------------------------------------------------------------------------------------------------------
 # updateNumerosity: THIS WILL PROBABLY STAY THE SAME
 #---------------------------------------------------------------------------------------------------------------------------- 
