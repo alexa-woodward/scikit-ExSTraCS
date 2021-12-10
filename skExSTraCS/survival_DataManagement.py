@@ -32,6 +32,9 @@ class DataManagement:
         self.continuousCount = 0
         self.classPredictionWeights = {} #what are these for 
         self.averageStateCount = 0
+        
+        ##NEW
+        self.eventRanked = None #used in setEventProb, the probability of the event occuring within a rule's event interval
 
         # About Dataset
         self.numTrainInstances = dataFeatures.shape[0]  # The number of instances in the training data
@@ -178,7 +181,8 @@ class DataManagement:
                 self.eventList[0] = float(target)
             else:
                 pass
-        self.eventSD = self.calcSD(timeeventList) #still need to fix this
+        self.eventSD = self.calcSD(timeeventList)#still need to fix this
+        self.eventRanked = sorted(eventList)
         self.eventRange = self.eventList[1] - self.eventList[0]
         
 
