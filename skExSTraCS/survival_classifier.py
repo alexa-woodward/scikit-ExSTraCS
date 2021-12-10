@@ -95,20 +95,20 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 self.eventInterval = [Low,High]
 
 #----------------------------------------------------------------------------------------------------------------------------
-# Build match function: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
+# setEventProb: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
 #----------------------------------------------------------------------------------------------------------------------------                              
-    def setPhenProb(self):
-        """ Calculate the probability that the phenotype of a given instance in the training data will fall withing the phenotype range specified by this rule. """
+    def setEventProb(self):
+        """ Calculate the probability that the event time of a given instance in the training data will fall withing the event range specified by this rule. """
         count = 0
         ref = 0
-#         print cons.env.formatData.phenotypeRanked
-#         print self.phenotype
-        while ref < len(cons.env.formatData.phenotypeRanked) and cons.env.formatData.phenotypeRanked[ref] <= self.phenotype[1]:
-            if cons.env.formatData.phenotypeRanked[ref] >= self.phenotype[0]:
+#         print self.eventRanked
+#         print self.eventList
+        while ref < len(self.eventRanked) and self.eventRanked[ref] <= self.eventInterval[1]:
+            if self.eventRanked[ref] >= self.eventInterval[0]:
                 count += 1
             ref += 1
 
-        self.phenotype_RP = count/float(cons.env.formatData.numTrainInstances)
+        self.event_RP = count/float(self.numTrainInstances)
             
                 
 #----------------------------------------------------------------------------------------------------------------------------
