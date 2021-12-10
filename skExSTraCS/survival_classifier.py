@@ -9,6 +9,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.condition = []
         self.eventStatus = None
         self.eventTime = None    
+        self.event_RP = None        #NEW - probability of this event time occurring by chance.
     
         self.fitness = model.init_fitness
         self.accuracy = 0
@@ -93,6 +94,23 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 High = float(adjEvent) + rangeRadius
                 self.eventInterval = [Low,High]
 
+#----------------------------------------------------------------------------------------------------------------------------
+# Build match function: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
+#----------------------------------------------------------------------------------------------------------------------------                              
+    def setPhenProb(self):
+        """ Calculate the probability that the phenotype of a given instance in the training data will fall withing the phenotype range specified by this rule. """
+        count = 0
+        ref = 0
+#         print cons.env.formatData.phenotypeRanked
+#         print self.phenotype
+        while ref < len(cons.env.formatData.phenotypeRanked) and cons.env.formatData.phenotypeRanked[ref] <= self.phenotype[1]:
+            if cons.env.formatData.phenotypeRanked[ref] >= self.phenotype[0]:
+                count += 1
+            ref += 1
+
+        self.phenotype_RP = count/float(cons.env.formatData.numTrainInstances)
+            
+                
 #----------------------------------------------------------------------------------------------------------------------------
 # Build match function: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
 #----------------------------------------------------------------------------------------------------------------------------    
@@ -243,6 +261,63 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                  self.fitness = pow(0.0001, 5)
              else:
                  self.fitness = pow(self.accuracy, model.nu) #- (self.phenotype[1]-self.phenotype[0])/cons.env.formatData.phenotypeRange)
+                    
+                    
+                    
+                    
+     def updateIndFitness(self,exploreIter):
+        """ Calculates the fitness of an individual rule based on it's accuracy and correct coverage relative to the 'Pareto' front """
+        coverOpportunity = 1000 #????
+        if self.coverDiff > 0: #???
+#             print 'quality'
+            #-----------------------------------------------------------------------------------
+            # CALCULATE CORRECT COVER DIFFERENCE COMPONENT
+            #-----------------------------------------------------------------------------------
+            #NOTES: Coverage is directly comparable when epoch complete, otherwise we want to estimate what coverage might be farther out.
+            if self.epochComplete:
+                #Get Pareto Metric
+                self.fitness = self.getParetoFitness([self.accuracyComponent,self.coverDiff])
+
+            else: #Rule Not epoch complete
+                #EXTRAPOLATE coverDiff up to number of trainin instances (i.e. age at epoch complete)
+                ruleAge = exploreIter - self.initTimeStamp+1 #Correct, because we include the current instance we are on.
+                self.coverDiff = self.coverDiff*cons.env.formatData.numTrainInstances/float(ruleAge)
+                objectivePair = [self.accuracyComponent,self.coverDiff]
+                #BEFORE PARETO FRONTS BEGIN TO BE UPDATED
+                if len(cons.env.formatData.necFront.paretoFrontAcc) == 0: #Nothing stored yet on incomplete epoch front
+                    #Temporarily use accuracy as fitness in this very early stage.
+                    #print 'fit path 1'
+                    self.indFitness = self.accuracyComponent
+                    if ruleAge >= coverOpportunity: #attempt to update front
+                        cons.env.formatData.necFront.updateFront(objectivePair)
+
+                #PARETO FRONTS ONLINE
+                else:  #Some pareto front established.
+                    if len(cons.env.formatData.ecFront.paretoFrontAcc) > 0: #Leave epoch incomplete front behind.
+                        self.indFitness = cons.env.formatData.ecFront.getParetoFitness(objectivePair)
+                        #print 'fit path 2'
+                    else: #Keep updating and evaluating with epoch incomplete front.
+                        if ruleAge < coverOpportunity: #Very young rules can not affect bestCoverDiff
+                            self.preFitness = cons.env.formatData.necFront.getParetoFitness(objectivePair)
+                            #print 'fit path 3'
+                        else:
+                            cons.env.formatData.necFront.updateFront(objectivePair)
+                            self.indFitness = cons.env.formatData.necFront.getParetoFitness(objectivePair)
+                            self.matchedAndFrontEstablished = True
+                            #print 'fit path 4'
+        else:
+#             print 'poor'
+#             print self.accuracyComponent
+            self.indFitness = self.accuracyComponent / float(1000)
+
+        if self.indFitness < 0:
+            print("negative fitness error")
+        if round(self.indFitness,5) > 1: #rounding added to handle odd division error, where 1.0 was being treated as a very small decimal just above 1.0
+            print("big fitness error")
+
+        #self.indFitness = math.pow(self.indFitness,cons.nu)  #Removed 11/25/15 - seems redundant with accuracy version (use one or the other)
+        self.lastIndFitness = copy.deepcopy(self.indFitness)               
+                    
 #----------------------------------------------------------------------------------------------------------------------------
 # updateNumerosity: THIS WILL PROBABLY STAY THE SAME
 #---------------------------------------------------------------------------------------------------------------------------- 
