@@ -182,7 +182,7 @@ class DataManagement:
             else:
                 pass
         self.eventSD = self.calcSD(timeeventList)#still need to fix this
-        self.eventRanked = sorted(eventList)
+        self.eventRanked = sorted(timeeventList)
         self.eventRange = self.eventList[1] - self.eventList[0]
         
 
