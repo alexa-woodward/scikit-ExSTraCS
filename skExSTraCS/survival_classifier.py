@@ -14,6 +14,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.fitness = model.init_fitness
         self.accuracy = 0
         self.numerosity = 1
+        self.coverDiff = 1 #Number of instances correctly covered by rule beyond what would be expected by chance.
         self.aveMatchSetSize = None
         self.deletionProb = None
         
@@ -248,6 +249,50 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             print(self.errorSum)
             print(self.matchCover)
             print(self.errorCount)
+            
+#New as of 12/10, copied over from pareto version            
+    def updateAccuracy(self,exploreIter):
+        """ Update the accuracy tracker """
+        nonUsefulDiscount = 0.001 #what 
+        coverOpportunity = 1000 #what is this
+        adjAccuracy = 0
+        #-----------------------------------------------------------------------------------
+        # CALCULATE ACCURACY
+        #-----------------------------------------------------------------------------------
+        try:
+            if cons.env.formatData.discretePhenotype:
+                self.accuracy = self.correctCover / float(self.matchCover)
+            else: #ContinuousCode #########################
+                self.accuracy = 1 - (self.errorSum/self.matchCover) # 1- average error based on range centroid.  Should be natural pressure to achieve narrow endpoint range.
+        except:
+            print("CorrectCover: " + str(self.correctCover))
+            print("MatchCover: " + str(self.matchCover))
+            print("MatchCount: " + str(self.matchCount))
+            print("InitTime: " + str(self.initTimeStamp))
+            print("EpochComplete: " + str(self.epochComplete))
+            raise NameError("Problem with updating accuracy")
+        
+
+        #-----------------------------------------------------------------------------------
+        # CALCULATE ADJUSTED ACCURACY
+        #-----------------------------------------------------------------------------------
+        if self.accuracy > self.event_RP:
+            adjAccuracy = self.accuracy - self.event_RP
+        elif self.matchCover == 2 and self.correctCover == 1 and not self.epochComplete and (exploreIter - self.timeStampGA) < coverOpportunity:
+            adjAccuracy = self.phenotype_RP / 2.0
+        else:
+            adjAccuracy = self.accuracy * nonUsefulDiscount
+        #-----------------------------------------------------------------------------------
+        # CALCULATE ACCURACY COMPONENT
+        #-----------------------------------------------------------------------------------
+        maxAccuracy = 1-self.phenotype_RP
+        if maxAccuracy == 0:
+            self.accuracyComponent = 0
+        else:
+            self.accuracyComponent = adjAccuracy / float(maxAccuracy) #Accuracy contribution scaled between 0 and 1 allowing for different maximum accuracies
+        self.accuracyComponent = 2*((1/float(1+math.exp(-5*self.accuracyComponent)))-0.5)/float(0.98661429815)
+        self.accuracyComponent = math.pow(self.accuracyComponent,1)
+        
 #----------------------------------------------------------------------------------------------------------------------------
 # updateFitness: 
 #---------------------------------------------------------------------------------------------------------------------------- 
