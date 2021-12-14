@@ -210,7 +210,17 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             pass
         else:
             self.correctCover += 1
-            
+           
+#----------------------------------------------------------------------------------------------------------------------------
+# updateCorrectCoverage: updates the correct "coverage" for a rule, the difference between the true number of covered instances and the expected coverage
+#----------------------------------------------------------------------------------------------------------------------------                   
+    def updateCorrectCoverage(self):
+        """ """
+        self.coverDiff = self.correctCover - self.event_RP*self.matchCover
+#         print self.coverDiff
+#         expectedCoverage = self.numTrainInstances*self.totalFreq
+#         self.coverDiff = self.correctCover - expectedCoverage  
+
 #----------------------------------------------------------------------------------------------------------------------------
 # updateError: updates the error for a classifier until all instances have been seen
 #----------------------------------------------------------------------------------------------------------------------------             
@@ -240,30 +250,18 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #----------------------------------------------------------------------------------------------------------------------------
 # updateAccuracy: update the accuracy for a classifier. Going to change this so it's related to the ERROR. Might update to MFF
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def updateAccuracy(self):
-        """ Update the accuracy tracker """
-        self.accuracy = 1 - (self.errorSum/self.matchCover) # 1- average error based on range centroid.  Should be natural pressure to achieve narrow endpoint range.
-        if self.accuracy < 0:  #temporary code
-            print('error')
-            print(self.accuracy)
-            print(self.errorSum)
-            print(self.matchCover)
-            print(self.errorCount)
-            
-#New as of 12/10, copied over from pareto version            
+
+#New as of 12/10, copied over from pareto version: for explanation, see [here](https://github.com/alexa-woodward/surviving-heterogeneity/blob/master/docs/misc/Retooling%20Fitenss%20for%20Noisy%20Problems%20in%20an%20LCS.pdf)             
     def updateAccuracy(self,exploreIter):
         """ Update the accuracy tracker """
-        nonUsefulDiscount = 0.001 #what 
-        coverOpportunity = 1000 #what is this
+        nonUsefulDiscount = 0.001 #ohhhh this is just 1/1000, or 1/cover opportunity 
+        coverOpportunity = 1000 #number of times a rule has seen instances...
         adjAccuracy = 0
         #-----------------------------------------------------------------------------------
         # CALCULATE ACCURACY
         #-----------------------------------------------------------------------------------
         try:
-            if cons.env.formatData.discretePhenotype:
-                self.accuracy = self.correctCover / float(self.matchCover)
-            else: #ContinuousCode #########################
-                self.accuracy = 1 - (self.errorSum/self.matchCover) # 1- average error based on range centroid.  Should be natural pressure to achieve narrow endpoint range.
+            self.accuracy = 1 - (self.errorSum/self.matchCover) # 1- average error based on range centroid.  Should be natural pressure to achieve narrow endpoint range.
         except:
             print("CorrectCover: " + str(self.correctCover))
             print("MatchCover: " + str(self.matchCover))
@@ -276,21 +274,21 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         #-----------------------------------------------------------------------------------
         # CALCULATE ADJUSTED ACCURACY
         #-----------------------------------------------------------------------------------
-        if self.accuracy > self.event_RP:
-            adjAccuracy = self.accuracy - self.event_RP
-        elif self.matchCover == 2 and self.correctCover == 1 and not self.epochComplete and (exploreIter - self.timeStampGA) < coverOpportunity:
-            adjAccuracy = self.phenotype_RP / 2.0
+        if self.accuracy > self.event_RP: #if the accuracy is greater than the probability that the event time will fall in the event range of the rule
+            adjAccuracy = self.accuracy - self.event_RP #adjust the accuracy by subtracting that probability 
+        elif self.matchCover == 2 and self.correctCover == 1 and not self.epochComplete and (exploreIter - self.timeStampGA) < coverOpportunity: #else, if the rule has matched two instances but only been correct once, and the rules is NOT epoch complete and the difference between the number of iterations and the time stamp is less than 1000, 
+            adjAccuracy = self.event_RP / 2.0 #set the accuracy to HALF the probability
         else:
-            adjAccuracy = self.accuracy * nonUsefulDiscount
+            adjAccuracy = self.accuracy * nonUsefulDiscount #?? #else, multiple the accuracy by the nonUsefulDiscount (1/cover opportunity ) 
         #-----------------------------------------------------------------------------------
         # CALCULATE ACCURACY COMPONENT
         #-----------------------------------------------------------------------------------
-        maxAccuracy = 1-self.phenotype_RP
-        if maxAccuracy == 0:
-            self.accuracyComponent = 0
-        else:
+        maxAccuracy = 1-self.event_RP #set max accuracy to 1 - the probability that the event time will fall in the event range of the rule
+        if maxAccuracy == 0: #if max accuracy is zero
+            self.accuracyComponent = 0 #set the accuracy component to zero
+        else: 
             self.accuracyComponent = adjAccuracy / float(maxAccuracy) #Accuracy contribution scaled between 0 and 1 allowing for different maximum accuracies
-        self.accuracyComponent = 2*((1/float(1+math.exp(-5*self.accuracyComponent)))-0.5)/float(0.98661429815)
+        self.accuracyComponent = 2*((1/float(1+math.exp(-5*self.accuracyComponent)))-0.5)/float(0.98661429815) #what is all this
         self.accuracyComponent = math.pow(self.accuracyComponent,1)
         
 #----------------------------------------------------------------------------------------------------------------------------
@@ -309,8 +307,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     
                     
                     
-                    
-     def updateIndFitness(self,exploreIter):
+ #new as of 12/10 need to edit....                   
+     def updateIndFitness(self,exploreIter): #what is exploreIter?
         """ Calculates the fitness of an individual rule based on it's accuracy and correct coverage relative to the 'Pareto' front """
         coverOpportunity = 1000 #????
         if self.coverDiff > 0: #???
