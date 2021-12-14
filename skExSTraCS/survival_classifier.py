@@ -252,7 +252,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #---------------------------------------------------------------------------------------------------------------------------- 
 
 #New as of 12/10, copied over from pareto version: for explanation, see [here](https://github.com/alexa-woodward/surviving-heterogeneity/blob/master/docs/misc/Retooling%20Fitenss%20for%20Noisy%20Problems%20in%20an%20LCS.pdf)             
-    def updateAccuracy(self,exploreIter):
+    def updateAccuracy(self,model):
         """ Update the accuracy tracker """
         nonUsefulDiscount = 0.001 #ohhhh this is just 1/1000, or 1/cover opportunity 
         coverOpportunity = 1000 #number of times a rule has seen instances...
@@ -276,7 +276,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         #-----------------------------------------------------------------------------------
         if self.accuracy > self.event_RP: #if the accuracy is greater than the probability that the event time will fall in the event range of the rule
             adjAccuracy = self.accuracy - self.event_RP #adjust the accuracy by subtracting that probability 
-        elif self.matchCover == 2 and self.correctCover == 1 and not self.epochComplete and (exploreIter - self.timeStampGA) < coverOpportunity: #else, if the rule has matched two instances but only been correct once, and the rules is NOT epoch complete and the difference between the number of iterations and the time stamp is less than 1000, 
+        elif self.matchCover == 2 and self.correctCover == 1 and not self.epochComplete and (model.interationCount - self.timeStampGA) < coverOpportunity: #else, if the rule has matched two instances but only been correct once, and the rules is NOT epoch complete and the difference between the number of iterations and the time stamp is less than 1000, 
             adjAccuracy = self.event_RP / 2.0 #set the accuracy to HALF the probability
         else:
             adjAccuracy = self.accuracy * nonUsefulDiscount #?? #else, multiple the accuracy by the nonUsefulDiscount (1/cover opportunity ) 
@@ -308,10 +308,10 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     
                     
  #new as of 12/10 need to edit....                   
-     def updateIndFitness(self,exploreIter): #what is exploreIter?
+     def updateIndFitness(self,model): 
         """ Calculates the fitness of an individual rule based on it's accuracy and correct coverage relative to the 'Pareto' front """
-        coverOpportunity = 1000 #????
-        if self.coverDiff > 0: #???
+        coverOpportunity = 1000 
+        if self.coverDiff > 0: 
 #             print 'quality'
             #-----------------------------------------------------------------------------------
             # CALCULATE CORRECT COVER DIFFERENCE COMPONENT
@@ -323,11 +323,11 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 
             else: #Rule Not epoch complete
                 #EXTRAPOLATE coverDiff up to number of trainin instances (i.e. age at epoch complete)
-                ruleAge = exploreIter - self.initTimeStamp+1 #Correct, because we include the current instance we are on.
-                self.coverDiff = self.coverDiff*cons.env.formatData.numTrainInstances/float(ruleAge)
+                ruleAge = model.iterationCount - self.initTimeStamp+1 #Correct, because we include the current instance we are on.
+                self.coverDiff = self.coverDiff*model.env.formatData.numTrainInstances/float(ruleAge)
                 objectivePair = [self.accuracyComponent,self.coverDiff]
                 #BEFORE PARETO FRONTS BEGIN TO BE UPDATED
-                if len(cons.env.formatData.necFront.paretoFrontAcc) == 0: #Nothing stored yet on incomplete epoch front
+                if len(cons.env.formatData.necFront.paretoFrontAcc) == 0: #Nothing stored yet on incomplete epoch front NEED TO FIX
                     #Temporarily use accuracy as fitness in this very early stage.
                     #print 'fit path 1'
                     self.indFitness = self.accuracyComponent
