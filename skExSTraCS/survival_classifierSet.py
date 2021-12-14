@@ -1,4 +1,4 @@
-from skExSTraCS.Classifier import Classifier
+from skExSTraCS.survival_classifier import survival_classifier
 import copy
 import random
 
