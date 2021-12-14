@@ -9,6 +9,7 @@ class ClassifierSet:
         self.correctSet = []  # List of references to rules in population that both match and specify correct phenotype
         self.microPopSize = 0
         self.aveEventRange = 0.0
+        self.nextID = 0
         
 #--------------------------------------------------------------------------------------------------------------------
 # makeMatchSet: Constructs a match set from the population. Covering is initiated if the match set is empty or a rule with the current correct eventRange is absent.
@@ -56,7 +57,11 @@ class ClassifierSet:
             oldCl.updateNumerosity(1)
             self.microPopSize += 1
         else:
-            self.popSet.append(cl)
+            cl.evaluateAccuracyAndInitialFitness(model,self.nextID)
+            self.popSet[self.nextID] = cl
+            self.nextID += 1
+            self.microPopSize += 1
+            #self.popSet.append(cl) old, new @ line #60 above, to include param "nextID"
             self.microPopSize += 1
         model.timer.stopTimeAdd()
         
