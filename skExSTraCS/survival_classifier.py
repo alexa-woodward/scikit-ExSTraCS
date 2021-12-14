@@ -100,6 +100,30 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 High = float(adjEvent) + rangeRadius
                 self.eventInterval = [Low,High]
 
+#--------------------------------------------------------------------------------------------- 
+# evaluateAccuracyAndInitialFitness: 
+#---------------------------------------------------------------------------------------------                                                 
+    def evaluateAccuracyAndInitialFitness(self,model,nextID): #This method should only be called once it is CERTAIN a classifier will be added to the population.
+        training_data = model.env.formatData.trainFormatted
+        num_instances = model.env.formatData.numTrainInstances
+        match_count = 0
+        correct_count = 0
+
+        for instance_index in range(num_instances): #for each instance in the environment 
+            state = training_data[0][instance_index]
+            condition = training_data[1][instance_index]
+            if self.match(model, state): #apply match function 
+                match_count += 1
+                model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
+                if self.phenotype == condition:
+                    correct_count += 1
+        try:
+            raw_accuracy = correct_count / match_count
+        except:
+            raw_accuracy = 0            
+        self.ID = nextID
+        self.accuracy = raw_accuracy
+        self.updateFitness(model) #updateIndFitness?       
 #----------------------------------------------------------------------------------------------------------------------------
 # setEventProb: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
 #----------------------------------------------------------------------------------------------------------------------------                              
