@@ -1,6 +1,7 @@
 # Import required moduldes------------------------------------
 import numpy as np
 import math
+from survival_pareto import *
 #-------------------------------------------------------------
 
 class DataManagement:
@@ -54,6 +55,10 @@ class DataManagement:
             model.rule_specificity_limit = min(i,self.numAttributes)
 
         self.trainFormatted = self.formatData(dataFeatures, dataEventTimes, dataEventStatus, model)  # The only np array
+        
+        #Initialize pareto front
+        self.ecFront = Pareto() #'ECFront', epoch complete
+        self.necFront = Pareto() #'NECFront NOT epoch complete
 #----------------------------------------------------------------------------------------------------------------------------
 # Function discriminateEventStatus: counts how many of each event/censored are in the dataset? 
 #---------------------------------------------------------------------------------------------------------------------------- 
