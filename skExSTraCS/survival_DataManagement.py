@@ -59,6 +59,13 @@ class DataManagement:
         #Initialize pareto front
         self.ecFront = Pareto() #'ECFront', epoch complete
         self.necFront = Pareto() #'NECFront NOT epoch complete
+        
+        
+        #For speedy matching
+        self.matchKey = {}
+        for i in range(self.numTrainInstances):
+            self.matchKey[i] = [] #list of matching classifierIDs + covering flag (doCovering)
+            
 #----------------------------------------------------------------------------------------------------------------------------
 # Function discriminateEventStatus: counts how many of each event/censored are in the dataset? 
 #---------------------------------------------------------------------------------------------------------------------------- 
