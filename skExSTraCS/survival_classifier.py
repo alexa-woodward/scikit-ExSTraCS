@@ -11,7 +11,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.eventTime = None    
         self.event_RP = None        #NEW - probability of this event time occurring by chance.
     
-        self.fitness = model.init_fitness
+        self.fitness = model.init_fitness #cant remember what its set at 
+        self.relativeIndFitness = None
         self.accuracy = 0
         self.numerosity = 1
         self.coverDiff = 1 #Number of instances correctly covered by rule beyond what would be expected by chance.
@@ -33,6 +34,10 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.errorSum = 0
         self.errorCount = 0
         
+        #new fitness stuff
+        self.lastIndFitness = 0.0
+        self.matchedAndFrontEstablished = False
+
 #----------------------------------------------------------------------------------------------------------------------------
 # initializeByCopy: XXX What is this doing? 
 #----------------------------------------------------------------------------------------------------------------------------  
@@ -321,31 +326,31 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 #Get Pareto Metric
                 self.fitness = self.getParetoFitness([self.accuracyComponent,self.coverDiff])
 
-            else: #Rule Not epoch complete
+            else: #Rule Not epoch complete, eventually, phase this out...all rules when born will be epochComplete
                 #EXTRAPOLATE coverDiff up to number of trainin instances (i.e. age at epoch complete)
                 ruleAge = model.iterationCount - self.initTimeStamp+1 #Correct, because we include the current instance we are on.
                 self.coverDiff = self.coverDiff*model.env.formatData.numTrainInstances/float(ruleAge)
                 objectivePair = [self.accuracyComponent,self.coverDiff]
                 #BEFORE PARETO FRONTS BEGIN TO BE UPDATED
-                if len(cons.env.formatData.necFront.paretoFrontAcc) == 0: #Nothing stored yet on incomplete epoch front NEED TO FIX
+                if len(model.env.formatData.necFront.paretoFrontAcc) == 0: #Nothing stored yet on incomplete epoch front 
                     #Temporarily use accuracy as fitness in this very early stage.
                     #print 'fit path 1'
                     self.indFitness = self.accuracyComponent
                     if ruleAge >= coverOpportunity: #attempt to update front
-                        cons.env.formatData.necFront.updateFront(objectivePair)
+                        model.env.formatData.necFront.updateFront(objectivePair)
 
                 #PARETO FRONTS ONLINE
                 else:  #Some pareto front established.
                     if len(cons.env.formatData.ecFront.paretoFrontAcc) > 0: #Leave epoch incomplete front behind.
-                        self.indFitness = cons.env.formatData.ecFront.getParetoFitness(objectivePair)
+                        self.indFitness = model.env.formatData.ecFront.getParetoFitness(objectivePair)
                         #print 'fit path 2'
                     else: #Keep updating and evaluating with epoch incomplete front.
                         if ruleAge < coverOpportunity: #Very young rules can not affect bestCoverDiff
-                            self.preFitness = cons.env.formatData.necFront.getParetoFitness(objectivePair)
+                            self.preFitness = model.env.formatData.necFront.getParetoFitness(objectivePair)
                             #print 'fit path 3'
                         else:
-                            cons.env.formatData.necFront.updateFront(objectivePair)
-                            self.indFitness = cons.env.formatData.necFront.getParetoFitness(objectivePair)
+                            model.env.formatData.necFront.updateFront(objectivePair)
+                            self.indFitness = model.env.formatData.necFront.getParetoFitness(objectivePair)
                             self.matchedAndFrontEstablished = True
                             #print 'fit path 4'
         else:
