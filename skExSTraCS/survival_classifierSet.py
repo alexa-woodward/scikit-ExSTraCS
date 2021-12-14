@@ -143,7 +143,7 @@ class ClassifierSet:
                 self.matchSet[j] -= 1
                 
 #--------------------------------------------------------------------------------------------------------------------
-# deleteFromCorrectSet: Delete reference to classifier in population, contained in self.matchSet
+# deleteFromCorrectSet: Delete reference to classifier in population, contained in self.correctSet
 #--------------------------------------------------------------------------------------------------------------------    
     def deleteFromCorrectSet(self, deleteRef):
         """ Delete reference to classifier in population, contained in self.matchSet."""
