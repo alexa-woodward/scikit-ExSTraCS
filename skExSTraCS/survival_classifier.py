@@ -388,7 +388,87 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             print("big fitness error")
 
         #self.indFitness = math.pow(self.indFitness,cons.nu)  #Removed 11/25/15 - seems redundant with accuracy version (use one or the other)
-        self.lastIndFitness = copy.deepcopy(self.indFitness)               
+        self.lastIndFitness = copy.deepcopy(self.indFitness)     
+        
+#----------------------------------------------------------------------------------------------------------------------------
+# updateRelativeIndFitness: 
+#----------------------------------------------------------------------------------------------------------------------------       
+        
+    def updateRelativeIndFitness(self, indFitSum, partOfCorrect, exploreIter):
+        """  Updates the relative individual fitness calculation """
+        self.sumIndFitness = indFitSum
+        self.partOfCorrect = partOfCorrect
+
+        #self.lastRelativeIndFitness = copy.deepcopy(self.relativeIndFitness)   #Is this needed????
+
+        if partOfCorrect:
+            self.relativeIndFitness = self.indFitness*self.numerosity /float(self.sumIndFitness)
+            #self.relativeIndFitness = self.indFitness/float(self.sumIndFitness) #Treat epoch complete or incomplete equally here.  This will give young rules a boost (in this method, relative fitness can be larger than 1 for NEC rules.
+            if self.relativeIndFitness > 1.0:
+                self.relativeIndFitness = 1.0
+#             if self.epochComplete: #Fitness shared only with other EC rules.
+#                 self.relativeIndFitness = self.indFitness*self.numerosity / self.sumIndFitness
+#             else:
+#                 if indFitSum == 0:
+#                     self.relativeIndFitness = 0
+#                 else:
+#                     self.relativeIndFitness = self.indFitness*self.numerosity*(exploreIter-self.initTimeStamp+1) / self.sumIndFitness
+        else:
+            self.relativeIndFitness = 0
+
+        
+#----------------------------------------------------------------------------------------------------------------------------
+# updateFitness: this all so far is for the discrete outcome case, see below continuous code needs to be updated
+#----------------------------------------------------------------------------------------------------------------------------       
+    #NEW
+    def updateFitness(self, model):
+        """ Update the fitness parameter. """
+#   if cons.env.formatData.discretePhenotype: noting that the code below was for a discrete phenotype
+        if self.epochComplete:
+            percRuleExp = 1.0
+        else:
+            percRuleExp = (model.iterationCount-self.initTimeStamp+1)/float(model.env.formatData.numTrainInstances)
+        #Consider the useful accuracy cutoff -  -maybe use a less dramatic change or ...na...
+        beta = 0.2
+        if self.matchCount >= 1.0/beta:
+            #print 'fit A'
+#                 print self.fitness
+#                 print self.relativePreFitness
+            self.fitness = self.fitness + beta*percRuleExp*(self.relativeIndFitness-self.fitness) # equation from paper but with percent rule experience added
+        elif self.matchCount == 1 or self.aveRelativeIndFitness == None:  #second condition handles special case after GA rule generated, but not has not gone through full matching yet
+            #print 'fit B'
+            self.fitness = self.relativeIndFitness
+            self.aveRelativeIndFitness = self.relativeIndFitness
+#                 if self.initTimeStamp == 2:
+#                     print self.aveRelativePreFitness
+#                     print 5/0
+        else: # when matchCount is < 1/beta (?) 
+            #print 'fit C'
+            self.fitness = (self.aveRelativeIndFitness*(self.matchCount-1)+self.relativeIndFitness)/self.matchCount  #often, last relative prefitness is 0!!!!!!!!!!!!!!!!!!!!!!!
+            self.aveRelativeIndFitness = (self.aveRelativeIndFitness*(self.matchCount-1)+self.relativeIndFitness)/self.matchCount
+
+
+
+#             #-----------------------------------------------------------------------------------
+#             # NO FITNESS SHARING!!!!!!!!!!!!!!!
+#             #-----------------------------------------------------------------------------------
+        self.fitness = self.indFitness #TEMPORARY #Effectively turns off fitness sharing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
+#         else: #ContinuousCode ######################## How would this need to change?
+#             #UPDATE NEEDED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#             if (self.phenotype[1]-self.phenotype[0]) >= cons.env.formatData.phenotypeRange:
+#                 self.fitness = pow(0.0001, 5)
+#             else:
+#                 if self.matchCover < 2 and self.epochComplete:
+#                     self.fitness = pow(0.0001, 5)
+#                 else:
+#                     self.fitness = pow(self.accuracy, cons.nu) #- (self.phenotype[1]-self.phenotype[0])/cons.env.formatData.phenotypeRange)
+
+        self.lastMatchFitness = copy.deepcopy(self.fitness)
+        if self.fitness < 0 or round(self.fitness,4) > 1:
+            self.reportClassifier('update fitness')
+            x = 5/0
+
                     
 #----------------------------------------------------------------------------------------------------------------------------
 # updateNumerosity: THIS WILL PROBABLY STAY THE SAME
