@@ -49,9 +49,9 @@ class Pareto:
         self.coverMax = self.paretoFrontRawCov[0]
         
 #----------------------------------------------------------------------------------------------------------------------------
-# updateFront: Handles process of checking and adjusting the fitness pareto front.
+# updateFront: Handles process of checking and adjusting the fitness pareto front. updateFront is called only when epochComplete = False...how will this need to change?
 #----------------------------------------------------------------------------------------------------------------------------    
-    def updateFront(self, objectivePair): #update front is called only when epochComplete = False...how will this need to change?
+    def updateFront(self, objectivePair): 
         #Update any changes to the maximum Cov - automatically adds point if new cov max is found
         #print self.classID + ' ' + self.epochID + '-------------------------------------'
         #print objectivePair
