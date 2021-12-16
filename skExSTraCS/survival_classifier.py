@@ -394,14 +394,14 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 # updateRelativeIndFitness: 
 #----------------------------------------------------------------------------------------------------------------------------       
         
-    def updateRelativeIndFitness(self, indFitSum, partOfCorrect, exploreIter):
+    def updateRelativeIndFitness(self, indFitSum, partOfCorrect, model): #model might not be needed
         """  Updates the relative individual fitness calculation """
-        self.sumIndFitness = indFitSum
-        self.partOfCorrect = partOfCorrect
+        self.sumIndFitness = indFitSum #this is set in survival_classifierSet.py,  = numerosity*fitness*ruleExp
+        self.partOfCorrect = partOfCorrect #also set in survival_classifierSet.py, = True or False based on whether the rule was part of the correct set
 
         #self.lastRelativeIndFitness = copy.deepcopy(self.relativeIndFitness)   #Is this needed????
 
-        if partOfCorrect:
+        if partOfCorrect: #i.e., if TRUE:
             self.relativeIndFitness = self.indFitness*self.numerosity /float(self.sumIndFitness)
             #self.relativeIndFitness = self.indFitness/float(self.sumIndFitness) #Treat epoch complete or incomplete equally here.  This will give young rules a boost (in this method, relative fitness can be larger than 1 for NEC rules.
             if self.relativeIndFitness > 1.0:
@@ -414,7 +414,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #                 else:
 #                     self.relativeIndFitness = self.indFitness*self.numerosity*(exploreIter-self.initTimeStamp+1) / self.sumIndFitness
         else:
-            self.relativeIndFitness = 0
+            self.relativeIndFitness = 0 #since if false, that rule was not in the correct set
 
         
 #----------------------------------------------------------------------------------------------------------------------------
