@@ -33,8 +33,8 @@ class Pareto:
         self.coverMax = 0.0
         self.accuracyMax = 0.0
         
-    #After updateing front calculate ans save AOC
-    #Change pareto fitness calculator to calculate area under cerve
+    #After updateing front calculate and save AOC
+    #Change pareto fitness calculator to calculate area under curve
     
     def rebootPareto(self, frontAcc, frontRawCov):
         """ Reinitializes pareto front from loaded run. """
@@ -48,39 +48,39 @@ class Pareto:
         self.coverMax = self.paretoFrontRawCov[0]
         
     
-    def updateFront(self, objectivePair):
+    def updateFront(self, objectivePair): #update front is called 
         """  Handles process of checking and adjusting the fitness pareto front. """
         #Update any changes to the maximum Cov - automatically adds point if new cov max is found
         #print self.classID + ' ' + self.epochID + '-------------------------------------'
         #print objectivePair
         changedFront = False
-        if len(self.paretoFrontAcc) == 0:
+        if len(self.paretoFrontAcc) == 0: #if the length of the pareto front for accuracy is zero, 
             #print "first point addition"
-            self.accuracyMax = objectivePair[0]
-            self.paretoFrontAcc.append(objectivePair[0])
-            self.coverMax = objectivePair[1]
+            self.accuracyMax = objectivePair[0] #set the accuracyMax to the accuracy component from the objective pair
+            self.paretoFrontAcc.append(objectivePair[0]) #also append the accuracy component to the pareto front (Accuracy)
+            self.coverMax = objectivePair[1] #do the same things for the coverage parameter
             self.paretoFrontRawCov.append(objectivePair[1])
-            changedFront = True
+            changedFront = True 
             
-        elif len(self.paretoFrontAcc) == 1:
+        elif len(self.paretoFrontAcc) == 1: #else, if the length of the front is  = 1 
             #print "second point addition"
-            if objectivePair[1] > self.coverMax:
+            if objectivePair[1] > self.coverMax: #if the value of coverDiff is greater than coverMax
                 #print 'A'
-                self.coverMax = objectivePair[1]
-                if objectivePair[0] > self.accuracyMax:
+                self.coverMax = objectivePair[1] #set coverMax to coverDiff
+                if objectivePair[0] > self.accuracyMax: #if accuracyComponent is greater than accuracyMax
                     #print '1*'
                     #Replace Point
-                    self.accuracyMax = objectivePair[0]
-                    self.paretoFrontAcc[0] = objectivePair[0]
+                    self.accuracyMax = objectivePair[0] #set accuracyMax to accuracyComponent and append to pareto front
+                    self.paretoFrontAcc[0] = objectivePair[0] 
                     self.paretoFrontRawCov[0] = objectivePair[1]
                     changedFront = True
-                else:
+                else: #if accuracyComponent is not greater than accuracyMax
                     #Add point
-                    self.paretoFrontAcc.insert(0,objectivePair[0])
-                    self.paretoFrontRawCov.insert(0,objectivePair[1])
+                    self.paretoFrontAcc.insert(0,objectivePair[0]) #insert accuracyComponent at position 0 
+                    self.paretoFrontRawCov.insert(0,objectivePair[1]) #insert coverDiff at position 0
                     changedFront = True
 
-            else:
+            else: #if the value of coverDiff is not greater than coverMax...
                 #print 'B'
                 if objectivePair[0] > self.accuracyMax:
                     self.accuracyMax = objectivePair[0]
