@@ -35,9 +35,10 @@ class Pareto:
         
     #After updateing front calculate and save AOC
     #Change pareto fitness calculator to calculate area under curve
-    
+#----------------------------------------------------------------------------------------------------------------------------
+# rebootPareto: reinitalizes pareto front from loaded run
+#----------------------------------------------------------------------------------------------------------------------------     
     def rebootPareto(self, frontAcc, frontRawCov):
-        """ Reinitializes pareto front from loaded run. """
         #Reboot Accuracy
         for i in range(len(frontAcc)):
             self.paretoFrontAcc.append(float(frontAcc[i]))
@@ -47,9 +48,10 @@ class Pareto:
             self.paretoFrontRawCov.append(float(frontRawCov[i]))                
         self.coverMax = self.paretoFrontRawCov[0]
         
-    
-    def updateFront(self, objectivePair): #update front is called 
-        """  Handles process of checking and adjusting the fitness pareto front. """
+#----------------------------------------------------------------------------------------------------------------------------
+# updateFront: Handles process of checking and adjusting the fitness pareto front.
+#----------------------------------------------------------------------------------------------------------------------------    
+    def updateFront(self, objectivePair): #update front is called only when epochComplete = False...how will this need to change?
         #Update any changes to the maximum Cov - automatically adds point if new cov max is found
         #print self.classID + ' ' + self.epochID + '-------------------------------------'
         #print objectivePair
@@ -128,8 +130,10 @@ class Pareto:
         self.verifyFront()  #TEMPORARY - DEBUGGING
         return changedFront
         
-
-    def PolygonArea(self, accList, covList):
+#----------------------------------------------------------------------------------------------------------------------------
+# PolygonArea: ???
+#---------------------------------------------------------------------------------------------------------------------------- 
+    def PolygonArea(self, accList, covList): #where are these parameters coming from?
         #Shoelace Formula
         accList.insert(0,0)
         covList.insert(0,0)
@@ -167,7 +171,9 @@ class Pareto:
 #         #print area
 #         return area
 
-        
+#----------------------------------------------------------------------------------------------------------------------------
+# verifyFront: ???
+#----------------------------------------------------------------------------------------------------------------------------       
     def verifyFront(self):
         for i in range(len(self.paretoFrontAcc)-1):
             if self.paretoFrontAcc[i] > self.paretoFrontAcc[i+1]:
@@ -177,9 +183,10 @@ class Pareto:
                 print('ERROR: Cov error')
                 x = 5/0
           
-
+#----------------------------------------------------------------------------------------------------------------------------
+# getParetoFitness: Determines and returns the pareto fitness based on the proportional distance of a given point
+#---------------------------------------------------------------------------------------------------------------------------- 
     def getParetoFitness(self, objectivePair):
-        """ Determines and returns the pareto fitness based on the proportional distance of a given point"""
         objectiveCoverVal = objectivePair[1] / self.coverMax
         #Special Case
         i = 0#-1
@@ -269,14 +276,17 @@ class Pareto:
         paretoFitness = goodDist / float(goodDist + badDist)
         return paretoFitness  
         
-        
+#----------------------------------------------------------------------------------------------------------------------------
+# calcDistance: 
+#----------------------------------------------------------------------------------------------------------------------------        
     def calcDistance(self, y1, y2, x1, x2):
         distance = math.sqrt(math.pow(x2-x1,2) + math.pow(y2-y1,2))
         return distance
             
-            
+#----------------------------------------------------------------------------------------------------------------------------
+# calcIntercept: Calculates the coordinates at which the two lines 'A' defined by points and 'B', defined by a point and slope, intersect
+#----------------------------------------------------------------------------------------------------------------------------            
     def calcIntercept(self, y1a, y2a, x1a, x2a, mainLineSlope):
-        """  Calculates the coordinates at which the two lines 'A' defined by points and 'B', defined by a point and slope, intersect """
         slopeA = self.calcSlope(y1a, y2a, x1a, x2a)
         slopeB = mainLineSlope
         if slopeA == 0:
@@ -304,18 +314,20 @@ class Pareto:
 #        yIntercept = slopeA*(xIntercept - x1a) + y1a
 #        return [yIntercept,xIntercept]   
 
-
+#----------------------------------------------------------------------------------------------------------------------------
+# calcSlope: Calculate slope between two points
+#---------------------------------------------------------------------------------------------------------------------------- 
     def calcSlope(self, y1, y2, x1, x2):
-        """ Calculate slope between two points """
         if x2-x1 == 0:
             slope = 0
         else:
             slope = (y2 - y1) / (x2 - x1)
         return slope
         
-        
+#----------------------------------------------------------------------------------------------------------------------------
+# pareto_frontier: Code obtained online: http://oco-carbon.com/metrics/find-pareto-frontiers-in-python
+#----------------------------------------------------------------------------------------------------------------------------         
     def pareto_frontier(self, Xs, Ys, maxX = True, maxY = True):
-        """ Code obtained online: http://oco-carbon.com/metrics/find-pareto-frontiers-in-python/"""
         myList = sorted([[Xs[i], Ys[i]] for i in range(len(Xs))], reverse=maxX)
         #print myList
         p_front = [myList[0]]    
