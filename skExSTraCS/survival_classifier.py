@@ -101,7 +101,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 self.eventInterval = [Low,High]
 
 #--------------------------------------------------------------------------------------------- 
-# evaluateAccuracyAndInitialFitness: 
+# evaluateAccuracyAndInitialFitness: going to need to add the updateFront function in here I think
 #---------------------------------------------------------------------------------------------                                                 
     def evaluateAccuracyAndInitialFitness(self,model,nextID): #This method should only be called once it is CERTAIN a classifier will be added to the population.
         training_data = model.env.formatData.trainFormatted
