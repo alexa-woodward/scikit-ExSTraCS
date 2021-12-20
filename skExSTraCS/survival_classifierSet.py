@@ -98,9 +98,9 @@ class ClassifierSet:
 #            self.popSet[ref].updateExperience() #this can go away, I think
             self.popSet[ref].updateMatchSetSize(model,matchSetNumerosity)  # Moved to match set to be like GHCS
             if ref in self.correctSet:
-                self.popSet[ref].updateCorrect()
+#               self.popSet[ref].updateCorrect()
 
-            self.popSet[ref].updateAccuracy()
+#            self.popSet[ref].updateAccuracy()
             self.popSet[ref].updateFitness(model)
             
 #--------------------------------------------------------------------------------------------------------------------
