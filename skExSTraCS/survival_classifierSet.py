@@ -77,11 +77,15 @@ class ClassifierSet:
 #--------------------------------------------------------------------------------------------------------------------
 # makeCorrectSet: Constructs a correct set out of the given match set. 
 #--------------------------------------------------------------------------------------------------------------------    
-    def makeCorrectSet(self,eventTime): #If the eventTime is within the rule eventInterval, append to the correct set.
+    def makeCorrectSet(self,eventStatus,eventTime): #If the eventTime is within the rule eventInterval, append to the correct set.
         for i in range(len(self.matchSet)):
             ref = self.matchSet[i]
-            if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
-                    self.correctSet.append(ref)
+            if eventStatus = 1:
+                if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
+                        self.correctSet.append(ref)
+            else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
+                if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]) or (float(eventTime) < float(self.popSet[ref].eventInterval[0]):
+                        self.correctSet.append(ref)                                                                                                                              
 #--------------------------------------------------------------------------------------------------------------------
 # updateSets: Updates all relevant parameters in the current match and correct sets.
 #--------------------------------------------------------------------------------------------------------------------    
@@ -91,7 +95,7 @@ class ClassifierSet:
             matchSetNumerosity += self.popSet[ref].numerosity
 
         for ref in self.matchSet:
-            self.popSet[ref].updateExperience()
+#            self.popSet[ref].updateExperience() #this can go away, I think
             self.popSet[ref].updateMatchSetSize(model,matchSetNumerosity)  # Moved to match set to be like GHCS
             if ref in self.correctSet:
                 self.popSet[ref].updateCorrect()
