@@ -14,29 +14,29 @@ class ClassifierSet:
 #--------------------------------------------------------------------------------------------------------------------
 # makeMatchSet: Constructs a match set from the population. Covering is initiated if the match set is empty or a rule with the current correct eventRange is absent.
 #--------------------------------------------------------------------------------------------------------------------
-    def makeMatchSet(self,model,state_event):
+    def makeMatchSet(self,model,state_event): 
         state = state_event[0]
         eventTime = state_event[1]
         doCovering = True
         setNumerositySum = 0
 
         model.timer.startTimeMatching()
-        for i in range(len(self.popSet)):
-            cl = self.popSet[i]
-            cl.updateEpochStatus(model)
+        for i in range(len(self.popSet)): #for each rule in the population 
+            cl = self.popSet[i] #cl is rule/classifer at index i
+#            cl.updateEpochStatus(model) #DO WE NEED THIS HERE? update epochStatus, if not already epoch complete and the number of iterations (minus the rule's timestamp) is greater than the number of training instances, set epochComplete = True 
 
-            if cl.match(model,state):
+            if cl.match(model,state): #if the rule is a match, append it to the match set 
                 self.matchSet.append(i)
-                setNumerositySum += cl.numerosity
+                setNumerositySum += cl.numerosity #and increase its numerosity 
 
-                if float(cl.eventInterval[0]) <= float(eventTime) <= float(cl.eventInterval[1]):   # Check that event time is within the rule event interval
-                        doCovering = False
+                if float(cl.eventInterval[0]) <= float(eventTime) <= float(cl.eventInterval[1]):   # Check that event time is within the rule event interval, if so, set covering = false
+                        doCovering = False 
 
         model.timer.stopTimeMatching()
 
         model.timer.startTimeCovering()
-        while doCovering:
-            newCl = Classifier(model)
+        while doCovering: #if covering is still true...
+            newCl = Classifier(model) #create a new classifier (call from survival_classifier.py script, runs the whole thing...which includes the "evaluateAccuracyandInitalFitness" function, called below before the classifier is added to popSet)
             newCl.initializeByCovering(model,setNumerositySum+1,state,eventTime)
             if len(newCl.specifiedAttList) > 0: #ADDED CHECK TO PREVENT FULLY GENERALIZED RULES
                 self.addClassifierToPopulation(model,newCl,True)
@@ -57,7 +57,7 @@ class ClassifierSet:
             oldCl.updateNumerosity(1)
             self.microPopSize += 1
         else:
-            cl.evaluateAccuracyAndInitialFitness(model,self.nextID)
+            cl.evaluateAccuracyAndInitialFitness(model,self.nextID) #this nextID thing might be an issue 
             self.popSet[self.nextID] = cl
             self.nextID += 1
             self.microPopSize += 1
