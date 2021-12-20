@@ -35,8 +35,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.errorCount = 0
         
         #new fitness stuff
-        self.lastIndFitness = 0.0
-        self.matchedAndFrontEstablished = False
+#        self.lastIndFitness = 0.0
+        self.matchedAndFrontEstablished = False #what is thisssss
 
 #----------------------------------------------------------------------------------------------------------------------------
 # initializeByCopy: XXX What is this doing? 
