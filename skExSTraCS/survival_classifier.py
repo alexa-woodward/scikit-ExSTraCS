@@ -115,7 +115,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 if self.phenotype == condition: #FIX
                     correct_count += 1
         try:
-            raw_accuracy = correct_count / match_count #ask Ryan about this
+            self.accuracy = updateAccuracy(model) 
         except:
             raw_accuracy = 0            
         self.ID = nextID
