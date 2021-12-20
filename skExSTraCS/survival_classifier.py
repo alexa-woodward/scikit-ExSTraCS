@@ -123,12 +123,12 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             raw_accuracy = 0            
         self.ID = nextID
         self.accuracy = raw_accuracy
-        self.updateFitness(model) #updateIndFitness?       
+        self.updateFitness(model) #this calls the pareto fitness function  
+        self.epochComplete = True #set epochComplete (For this rule) equal to TRUE..later could remove all references to epochComplete
 #----------------------------------------------------------------------------------------------------------------------------
-# setEventProb: create a condition that matches the attributes in an instance, called in the above function initalizebyCovering 
+# setEventProb: Calculate the probability that the event time of a given instance in the training data will fall withing the event range specified by this rule. 
 #----------------------------------------------------------------------------------------------------------------------------                              
     def setEventProb(self):
-        """ Calculate the probability that the event time of a given instance in the training data will fall withing the event range specified by this rule. """
         count = 0
         ref = 0
 #         print self.eventRanked
