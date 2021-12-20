@@ -100,7 +100,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #--------------------------------------------------------------------------------------------- 
 # evaluateAccuracyAndInitialFitness: going to need to add the updateFront function in here I think
 #---------------------------------------------------------------------------------------------                                                 
-    def evaluateAccuracyAndInitialFitness(self,model,nextID): #This method should only be called once it is CERTAIN a classifier will be added to the population.
+    def evaluateAccuracyAndInitialFitness(self,model,nextID, eventTime): #This method should only be called once it is CERTAIN a classifier will be added to the population.
         training_data = model.env.formatData.trainFormatted
         num_instances = model.env.formatData.numTrainInstances
         match_count = 0
@@ -112,10 +112,10 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             if self.match(model, state): #apply match function 
                 match_count += 1
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
-                if self.phenotype == condition:
+                if self.phenotype == condition: #FIX
                     correct_count += 1
         try:
-            raw_accuracy = correct_count / match_count
+            raw_accuracy = correct_count / match_count #ask Ryan about this
         except:
             raw_accuracy = 0            
         self.ID = nextID
@@ -160,7 +160,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         return condList
 
 #----------------------------------------------------------------------------------------------------------------------------
-# updateEpochStatus: determines whether or not the classifier has seen all of the instances. If true, set epochComplete = True
+# updateEpochStatus: determines whether or not the classifier has seen all of the instances. If true, set epochComplete = True. WON'T NEED THIS LATER
 #----------------------------------------------------------------------------------------------------------------------------  
 
     def updateEpochStatus(self,model):  
@@ -211,7 +211,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     
     ## All the rest of this stuff would probably stay very similar
 #----------------------------------------------------------------------------------------------------------------------------
-# updateExperience: updates how many instances the classifier (rule) has seen. If it has seen all the instances, pass.
+# updateExperience: updates how many instances the classifier (rule) has seen. If it has seen all the instances, pass. WON'T NEED THIS TO UPDATE MATCHCOUNT  (since it only updates if epochComplete = False
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateExperience(self): #add 1 to either the matchcount or the matchcover, depending on what was needed 
         self.matchCount += 1
@@ -228,7 +228,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         else: #if its not less than 5,
             self.aveMatchSetSize = self.aveMatchSetSize + model.beta * (matchSetSize - self.aveMatchSetSize)
 #----------------------------------------------------------------------------------------------------------------------------
-# updateCorrect: updates the correct count for a classifier until all instances have been seen, once epochComplete add to "correctCover" instead 
+# updateCorrect: updates the correct count for a classifier until all instances have been seen, once epochComplete add to "correctCover" instead. WON'T NEED THIS TO UPDATE CORREXT COUNT (since it only updates if epochComplete = False)
 #---------------------------------------------------------------------------------------------------------------------------- 
     def updateCorrect(self):
         self.correctCount += 1
