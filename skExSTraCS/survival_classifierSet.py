@@ -95,7 +95,7 @@ class ClassifierSet:
             matchSetNumerosity += self.popSet[ref].numerosity
 
         for ref in self.matchSet:
-#            self.popSet[ref].updateExperience() #this can go away, I think
+            self.popSet[ref].updateExperience() #this can go away, I think, but need to preserve a way to increase the matchCover
             self.popSet[ref].updateMatchSetSize(model,matchSetNumerosity)  # Moved to match set to be like GHCS
             if ref in self.correctSet: #if the rule is in the correct set, update the correctCoverage and the error
                self.popSet[ref].updateCorrect()
