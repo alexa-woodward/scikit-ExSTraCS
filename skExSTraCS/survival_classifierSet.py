@@ -378,8 +378,7 @@ class ClassifierSet:
 # setIterStamps: Sets the time stamp of all classifiers in the set to the current time. The current time is the number of exploration steps executed so far.
 #--------------------------------------------------------------------------------------------------------------------        
     def setIterStamps(self, iterationCount):
-        """ Sets the time stamp of all classifiers in the set to the current time. The current time
-        is the number of exploration steps executed so far.  """
+        """ Sets the time stamp of all classifiers in the set to the current time. The current time is the number of exploration steps executed so far.  """
         for i in range(len(self.correctSet)):
             ref = self.correctSet[i]
             self.popSet[ref].updateTimeStamp(iterationCount)
