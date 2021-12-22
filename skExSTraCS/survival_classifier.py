@@ -89,6 +89,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 Low = float(eventTime) - rangeRadius
                 High = float(eventTime) + rangeRadius
                 self.eventInterval = [Low,High]  
+                self.setEventProb() #this might need to have eventStatus as a parameter...see 
     else: #if the instance was censored
             eventRange = self.eventList[1] - self.eventList[0] #again, this should be the same at Tmax
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
@@ -125,7 +126,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #----------------------------------------------------------------------------------------------------------------------------
 # setEventProb: Calculate the probability that the event time of a given instance in the training data will fall withing the event range specified by this rule. 
 #----------------------------------------------------------------------------------------------------------------------------                              
-    def setEventProb(self):
+    def setEventProb(self): #this might need to chance for when eventStatus = 0
         count = 0
         ref = 0
 #         print self.eventRanked
