@@ -102,7 +102,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #--------------------------------------------------------------------------------------------- 
 # evaluateAccuracyAndInitialFitness: going to need to add the updateFront function in here I think
 #---------------------------------------------------------------------------------------------                                                 
-    def evaluateAccuracyAndInitialFitness(self,model,nextID, eventTime): #This method should only be called once it is CERTAIN a classifier will be added to the population.
+    def evaluateAccuracyAndInitialFitness(self,model,nextID, eventTime): #need to add event status here too #This method should only be called once it is CERTAIN a classifier will be added to the population.
         training_data = model.env.formatData.trainFormatted
         num_instances = model.env.formatData.numTrainInstances
         match_count = 0
@@ -112,12 +112,12 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             state = training_data[0][instance_index]
             condition = training_data[1][instance_index]
             if self.match(model, state): #apply match function 
-                match_count += 1
+                match_count += 1 #call updateExperience?
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
-                if self.phenotype == condition: #FIX
-                    correct_count += 1
+                if self.phenotype == condition: #FIX or call makeCorrectSet
+                    correct_count += 1 #call updateCorrect?
         try:
-            self.accuracy = updateAccuracy(model) 
+            self.accuracy = updateAccuracy(model) #this might not work because updateError has not been called yet
         except:
             self.accuracy = (correct_count / match_count)   #keeping this here just in case      
 #        self.ID = nextID #I dont think we need this
