@@ -89,7 +89,7 @@ class ClassifierSet:
 #--------------------------------------------------------------------------------------------------------------------
 # updateSets: Updates all relevant parameters in the current match and correct sets.
 #--------------------------------------------------------------------------------------------------------------------    
-    def updateSets(self,model):
+    def updateSets(self,model,eventTime,eventStatus):
         matchSetNumerosity = 0
         for ref in self.matchSet:
             matchSetNumerosity += self.popSet[ref].numerosity
@@ -97,11 +97,14 @@ class ClassifierSet:
         for ref in self.matchSet:
 #            self.popSet[ref].updateExperience() #this can go away, I think
             self.popSet[ref].updateMatchSetSize(model,matchSetNumerosity)  # Moved to match set to be like GHCS
-            if ref in self.correctSet:
-#               self.popSet[ref].updateCorrect()
-
-#            self.popSet[ref].updateAccuracy()
-            self.popSet[ref].updateFitness(model)
+            if ref in self.correctSet: #if the rule is in the correct set, update the correctCoverage and the error
+               self.popSet[ref].updateCorrect()
+               self.popSet[ref].updateError(eventTime)
+            else: #if it is in the incorrect set, add 1 to the error
+               self.popSet[ref].updateIncorrectError()                                                                                                                                       
+            if eventStatus = 1:                                                                                                                                            
+               self.popSet[ref].updateAccuracy(model) #update accuracy if event occured
+            self.popSet[ref].updateFitness(model) #update fitness
             
 #--------------------------------------------------------------------------------------------------------------------
 # do_correct_set_subsumption: XXX
