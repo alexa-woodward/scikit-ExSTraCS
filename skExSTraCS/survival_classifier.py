@@ -1,6 +1,7 @@
 import random
 import copy
 import numpy as np
+from survival_DataManagement import *
 
 class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     def __init__(self,model):
@@ -124,15 +125,15 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.updateFitness(model) #this calls the pareto fitness function  
         self.epochComplete = True #set epochComplete (For this rule) equal to TRUE..later could remove all references to epochComplete
 #----------------------------------------------------------------------------------------------------------------------------
-# setEventProb: Calculate the probability that the event time of a given instance in the training data will fall withing the event range specified by this rule. 
+# setEventProb: Calculate the relative probability that an event time of an instance in the training data will fall withing the event range specified by this rule. 
 #----------------------------------------------------------------------------------------------------------------------------                              
-    def setEventProb(self): #this might need to chance for when eventStatus = 0
+    def setEventProb(self,eventRanked): #only considers instances with eventStatus = 1
         count = 0
         ref = 0
 #         print self.eventRanked
 #         print self.eventList
-        while ref < len(self.eventRanked) and self.eventRanked[ref] <= self.eventInterval[1]:
-            if self.eventRanked[ref] >= self.eventInterval[0]:
+        while ref < len(eventRanked) and eventRanked[ref][0] <= self.eventInterval[1]:
+            if eventRanked[ref][0] >= self.eventInterval[0] and eventRanked[ref][1] = 1:
                 count += 1
             ref += 1
 
