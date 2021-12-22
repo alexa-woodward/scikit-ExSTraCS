@@ -6,7 +6,7 @@ from survival_pareto import *
 
 class DataManagement:
     def __init__(self,dataFeatures,dataEventTimes,dataEventStatus,model):
-        self.savedRawTrainingData = [dataFeatures,dataEventsTimes,dataEventStatus]
+        self.savedRawTrainingData = [dataFeatures,dataEventTimes,dataEventStatus]
         self.numAttributes = dataFeatures.shape[1]  # The number of attributes in the input file.
         self.attributeInfoType = [0] * self.numAttributes  #stores false (d) or true (c) depending on its type, which points to parallel reference in one of the below 2 arrays
         self.attributeInfoContinuous = [[np.inf,-np.inf] for _ in range(self.numAttributes)] #stores continuous ranges and NaN otherwise
@@ -17,7 +17,7 @@ class DataManagement:
         # About Event times, events or censoring 
         self.discreteEvent = False  # Is the Class/Phenotype Discrete? (False = Continuous)
         self.eventList = [0,0]  # Stores maximum and minimum event times SHOULD THE MIN ALWAYS JUST BE ZERO?
-        self.eventTypes = []
+        self.eventTypes = [] #what is this?
         #self.eventDict = {}
         self.eventRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
         self.eventStatus = [] # Will store the event status (had the event = 1, censored = 0 for each instance)
@@ -69,11 +69,11 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------
 # Function discriminateEventStatus: counts how many of each event/censored are in the dataset? 
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def discriminateEventStatus(self,eventStatus): 
+    def discriminateEventStatus(self,dataEventStatus): 
         currentEventIndex = 0
         classCount = {} #dictionary containing the key (1 or 0) and value (count of each).
         while (currentEventIndex < self.numTrainInstances):
-            target = eventStatus[currentEventIndex]
+            target = dataEventStatus[currentEventIndex]
             if target in self.eventTypes:
                 classCount[target]+=1
                 self.classPredictionWeights[target] += 1
@@ -93,11 +93,11 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------
 # Function discriminateEventTimes: counts how many of each event time are in the dataset (key = eventTime, value = number of occurences). Is it more appropriate to use the prediction weights here??
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def discriminateEventTimes(self,eventTimes): 
+    def discriminateEventTimes(self,dataEventTimes): 
         currentEventIndex = 0
         classCount = {}
         while (currentEventIndex < self.numTrainInstances):
-            target = eventTimes[currentEventIndex]
+            target = dataEventTimes[currentEventIndex]
             if target in self.eventList:
                 classCount[target]+=1
                 self.classPredictionWeights[target] += 1
@@ -116,14 +116,14 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------
 # Function discriminateAttributes: create a dictionary with key = state and value = # of times it appears (I think)
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def discriminateAttributes(self,features,model): 
+    def discriminateAttributes(self,dataFeatures,model): 
         for att in range(self.numAttributes): #for eaach attribute 
             attIsDiscrete = True #set is discrete to true (what if it isn't?)
             if self.isDefault: # if the discrete atttribute limit is an integer
                 currentInstanceIndex = 0
                 stateDict = {}
                 while attIsDiscrete and len(list(stateDict.keys())) <= model.discrete_attribute_limit and currentInstanceIndex < self.numTrainInstances:
-                    target = features[currentInstanceIndex,att] #retrieve the attribute value (features is an np array)
+                    target = dataFeatures[currentInstanceIndex,att] #retrieve the attribute value (features is an np array)
                     if target in list(stateDict.keys()): #if the attribute is present in the stateDict key (of a key value pair), add 1 (to the value)
                         stateDict[target] += 1
                     elif np.isnan(target): #if it is missing, pass
@@ -153,10 +153,10 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------
 # Function characterizeAttributes: identifies features as continuous or discrete and returns lists of the values present in each attribute (separately for continuous or discrete features) 
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def characterizeAttributes(self,features,model):
+    def characterizeAttributes(self,dataFeatures,model):
         for currentFeatureIndexInAttributeInfo in range(self.numAttributes): #for each feature index in attribute info
             for currentInstanceIndex in range(self.numTrainInstances): #for each instance in the environment 
-                target = features[currentInstanceIndex,currentFeatureIndexInAttributeInfo] #set the target as the attribute info (value)
+                target = dataFeatures[currentInstanceIndex,currentFeatureIndexInAttributeInfo] #set the target as the attribute info (value)
                 if not self.attributeInfoType[currentFeatureIndexInAttributeInfo]:#if attribute is discrete (recall that false = discrete and true = continuous for attributeInfoType)
                     if target in self.attributeInfoDiscrete[currentFeatureIndexInAttributeInfo].distinctValues or np.isnan(target): #if the value is missing or is already in the list of distict values, the pass
                         pass
@@ -179,10 +179,10 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------
 # Function characterizeEventTimes: Determine the range of event times 
 #----------------------------------------------------------------------------------------------------------------------------   
-    def characterizeEventTimes(self,eventTimes,model): 
+    def characterizeEventTimes(self,dataEventTimes,model): 
         timeeventList = [] #create an empty list 
         for currentInstanceIndex in range(len(eventTimes)): 
-            target = eventTimes[currentInstanceIndex] 
+            target = dataEventTimes[currentInstanceIndex] 
             timeeventList.append(target)
             #Find Minimum and Maximum values for the continuous phenotype so we know the range.
             if np.isnan(target): #if it is missing, pass
@@ -218,8 +218,8 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------
 # Function formatData:
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def formatData(self,features,eventTimes, eventStatus, model):
-        formatted = np.insert(features,self.numAttributes,eventTimes,eventStatus, 1) #Combines features and phenotypes into one array
+    def formatData(self,dataFeatures,dataEventTimes, dataEventStatus, model):
+        formatted = np.insert(dataFeatures,self.numAttributes,dataEventTimes,dataEventStatus, 1) #Combines features and phenotypes into one array
 
         self.shuffleOrder = np.random.choice(self.numTrainInstances,self.numTrainInstances,replace=False) #e.g. first element in this list is where the first element of the original list will go
         shuffled = []
