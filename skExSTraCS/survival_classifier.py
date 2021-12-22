@@ -334,7 +334,6 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     
                                       
      def updateFitness(self,model): 
-        coverOpportunity = 1000 #I dont think this is needed anymore...
         if self.coverDiff > 0: 
             self.fitness = self.getParetoFitness([self.accuracyComponent,self.coverDiff])
 #Got rid of all the stuff here that was if: epochComplete = False
