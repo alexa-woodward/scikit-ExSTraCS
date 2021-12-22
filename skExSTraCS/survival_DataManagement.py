@@ -17,7 +17,7 @@ class DataManagement:
         # About Event times, events or censoring 
         self.discreteEvent = False  # Is the Class/Phenotype Discrete? (False = Continuous)
         self.eventList = [0,0]  # Stores maximum and minimum event times SHOULD THE MIN ALWAYS JUST BE ZERO?
-        self.eventTypes = [] #what is this?
+        self.eventTypes = [] #should end up being just zero and 1, if not maybe should print error??
         #self.eventDict = {}
         self.eventRange = None  # Stores the difference between the maximum and minimum values for a continuous phenotype
         self.eventStatus = [] # Will store the event status (had the event = 1, censored = 0 for each instance)
@@ -35,7 +35,7 @@ class DataManagement:
         self.averageStateCount = 0
         
         ##NEW
-        self.eventRanked = None #used in setEventProb, the probability of the event occuring within a rule's event interval
+        self.eventRanked = [list(i) for i in sorted(zip(dataEventTimes,dataEventStatus))]#used in setEventProb, the probability of the event occuring within a rule's event interval 
 
         # About Dataset
         self.numTrainInstances = dataFeatures.shape[0]  # The number of instances in the training data
@@ -194,7 +194,6 @@ class DataManagement:
             else:
                 pass
         self.eventSD = self.calcSD(timeeventList)#still need to fix this
-        self.eventRanked = sorted(timeeventList)
         self.eventRange = self.eventList[1] - self.eventList[0]
         
 
