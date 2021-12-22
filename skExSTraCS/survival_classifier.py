@@ -119,9 +119,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         try:
             self.accuracy = updateAccuracy(model) 
         except:
-            raw_accuracy = 0            
-        self.ID = nextID
-        self.accuracy = raw_accuracy
+            self.accuracy = (correct_count / match_count)   #keeping this here just in case      
+#        self.ID = nextID #I dont think we need this
         self.updateFitness(model) #this calls the pareto fitness function  
         self.epochComplete = True #set epochComplete (For this rule) equal to TRUE..later could remove all references to epochComplete
 #----------------------------------------------------------------------------------------------------------------------------
