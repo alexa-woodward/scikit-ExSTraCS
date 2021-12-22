@@ -223,6 +223,12 @@ class ClassifierSet:
         if model.env.formatData.continuousCount > 0:
             cl1.rangeCheck(model)
             cl2.rangeCheck(model)
+                                                                                                                                                      
+        #-------------------------------------------------------
+        # Event range probability correction
+        #-------------------------------------------------------                                                                                                                                                                                                                                                                                           
+        cl1.setEventProb()
+        cl2.setEventProb()                                                                                                                                              
 
         if changed or nowchanged or howaboutnow:
             if nowchanged:
