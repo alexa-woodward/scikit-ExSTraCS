@@ -102,7 +102,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #--------------------------------------------------------------------------------------------- 
 # evaluateAccuracyAndInitialFitness: going to need to add the updateFront function in here I think
 #---------------------------------------------------------------------------------------------                                                 
-    def evaluateAccuracyAndInitialFitness(self,model,nextID, eventTime): #need to add event status here too #This method should only be called once it is CERTAIN a classifier will be added to the population.
+    def evaluateAccuracyAndInitialFitness(self,model,nextID, eventTime, eventStatus): #need to add event status here too #This method should only be called once it is CERTAIN a classifier will be added to the population.
         training_data = model.env.formatData.trainFormatted
         num_instances = model.env.formatData.numTrainInstances
         match_count = 0
@@ -116,8 +116,11 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
                 if self.phenotype == condition: #FIX or call makeCorrectSet
                     correct_count += 1 #call updateCorrect?
+                    self.updateError(eventTime)
+                else:    
+                    self.updateIncorrectError()
         try:
-            self.accuracy = updateAccuracy(model) #this might not work because updateError has not been called yet
+            self.accuracy = updateAccuracy(model) #updateError has now been called above
         except:
             self.accuracy = (correct_count / match_count)   #keeping this here just in case      
 #        self.ID = nextID #I dont think we need this
@@ -252,20 +255,20 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 # updateError: updates the error for a classifier until all instances have been seen
 #----------------------------------------------------------------------------------------------------------------------------             
     def updateError(self,eventTime):
-        if not self.epochComplete:
-            high = self.eventInterval[1]
-            low = self.eventInterval[0]
-            if self.eventInterval[1] > self.eventList[1]:
-                high = self.eventList[1]
-            if self.eventInterval[0] < self.eventList[0]:
-                low = self.eventList[0]
+#        if not self.epochComplete: Removed this 
+        high = self.eventInterval[1]
+        low = self.eventInterval[0]
+        if self.eventInterval[1] > self.eventList[1]:
+            high = self.eventList[1]
+        if self.eventInterval[0] < self.eventList[0]:
+            low = self.eventList[0]
                 
-            rangeCentroid = (high + low) / 2.0
-            error = abs(rangeCentroid - eventTime)  #this or self.eventTime?
-            adjustedError = error / (self.eventList[1] - self.eventList[0])
+        rangeCentroid = (high + low) / 2.0
+        error = abs(rangeCentroid - eventTime)  #this or self.eventTime?
+        adjustedError = error / (self.eventList[1] - self.eventList[0])
 
-            self.errorSum += adjustedError  #Error is fraction of total phenotype range (i.e. maximum possible error)
-            self.errorCount += 1        
+        self.errorSum += adjustedError  #Error is fraction of total phenotype range (i.e. maximum possible error)
+        self.errorCount += 1        
             
 #----------------------------------------------------------------------------------------------------------------------------
 # updateIncorrectError: adds the max error (1) to errorSum if the instance falls in [I] 
