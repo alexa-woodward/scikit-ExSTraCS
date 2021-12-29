@@ -23,15 +23,21 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 """
 
 #Import Required Modules-------------------------------
-from exstracs_constants import *
+#from exstracs_constants import *
+from survival_DataManagement import *
 import random
+import numpy as np
 from sklearn.neighbors import KernelDensity
+
 #------------------------------------------------------
 
 class Prediction:
-    def __init__(self, population):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
+    def __init__(self, population,eventList):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
         """ Constructs the voting array and determines the prediction decision. """
         self.decision = None
+        self.survProb = None
+        self.times = None
+        
         #-------------------------------------------------------
         # CONTINUOUS PHENOTYPE
         #-------------------------------------------------------
@@ -73,19 +79,29 @@ class Prediction:
             besthigh = segmentList[bestRef+1]
             centroid = (bestlow + besthigh) / 2.0
             self.decision = centroid
-                
-    def individualSurvivalProb(self)
-      self.survProb = None
+            
+#-----------------------------------------------------------------------------------------------------------------
+# individualSurvivalProb: generates the survival probability distribution for a test instance 
+#-----------------------------------------------------------------------------------------------------------------           
+    def individualSurvivalProb(self,correctTimes,eventList)
+      empDist = np.asarray(sorted(correctTimes)).reshape((len(empDist), 1)) #sort the correct times, set as the empricial distribution
+      KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
+      KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
       
-      #Need to
+      self.times = np.asarray([time for time in range(0, eventList[1]+1)]).reshape((len(values), 1))
+      probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
+      self.survProb = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
+
+      
       #1. get coverage from other matched instances. Is this stored anywhere already? If not need to make new function to store these. 
       #2. Use KDE to estimate the PDF
       #3. Use: survival = 1 - np.cumsum(probabilities) to retrieve the survival probabilities
 
 
-                        
+#-----------------------------------------------------------------------------------------------------------------
+# getFitnessSum: Get the fitness Sum of rules in the rule-set. For continuous phenotype prediction.
+#-----------------------------------------------------------------------------------------------------------------                          
     def getFitnessSum(self,population,low,high):
-        """ Get the fitness Sum of rules in the rule-set. For continuous phenotype prediction. """
         fitSum = 0
         for ref in population.matchSet:
             cl = population.popSet[ref]
@@ -93,12 +109,25 @@ class Prediction:
                 fitSum += cl.fitness
         return fitSum
     
-                    
+#-----------------------------------------------------------------------------------------------------------------
+# getDecision: returns the eventTime prediction
+#-----------------------------------------------------------------------------------------------------------------                     
     def getDecision(self):
-        """ Returns prediction decision. """
         return self.decision
 
+#-----------------------------------------------------------------------------------------------------------------
+# getSurvProb: returns the survival distribution, NOT CALLED ANYWHERE YET
+#-----------------------------------------------------------------------------------------------------------------  
+    def getSurvProb(self):
+        return self.survProb
 
-    def getSet(self):
-        """ Returns prediction decision. """
-        return self.vote
+#-----------------------------------------------------------------------------------------------------------------
+# plotSurvDist: NOT CALLED ANYWHERE YET
+#-----------------------------------------------------------------------------------------------------------------    
+    def plotSurvDist(self, survProb):
+        plt.figure(figsize=(10, 10))
+        pyplot.vlines(empDist, 0, 0.05, linestyles ="solid", colors ="k")
+        pyplot.xlabel('time')
+        pyplot.ylabel('survival probabilty')
+        
+        pyplot.plot(self.times[:], survProb)
