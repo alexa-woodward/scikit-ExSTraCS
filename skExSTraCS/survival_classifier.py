@@ -121,7 +121,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
                         correct_count += 1
                         self.updateError(eventTime,eventStatus)
-                        #self.updateCorrectTimes(XXX)
+                        self.updateCorrectTimes(eventTime) #appends the eventTime to a list of "correctTimes" for each correctly matched training instance
                     else: 
                         self.updateIncorrectError()
                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
@@ -251,7 +251,13 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             pass
         else:
             self.correctCover += 1
-           
+            
+#----------------------------------------------------------------------------------------------------------------------------
+# updateCorrectTimes: updates a list of eventTimes from correctly matched rules. Called in evaluateAccuracyandInitalFitness 
+#---------------------------------------------------------------------------------------------------------------------------- 
+    def updateCorrectTimes(self,eventTime):
+        self.coverTimes.append(eventTime)
+
 #----------------------------------------------------------------------------------------------------------------------------
 # updateCorrectCoverage: updates the correct "coverage" for a rule, the difference between the true number of covered instances and the expected coverage
 #----------------------------------------------------------------------------------------------------------------------------                   
