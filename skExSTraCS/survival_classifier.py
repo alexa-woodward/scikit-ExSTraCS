@@ -117,7 +117,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             if self.match(model, state): #apply match function 
                 match_count += 1 #call updateExperience?
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
-                if eventStatus = 1:
+                if eventStatus == 1:
                     if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
                         correct_count += 1
                         self.updateError(eventTime,eventStatus)
