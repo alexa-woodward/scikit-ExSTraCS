@@ -84,7 +84,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 self.condition.append(self.buildMatch(model,attRef,state)) #also append the condition of that attribute
                 
 ### Creating a continuous event range (endpoint):           
-    if self.eventStatus = 1: #if the event occured
+    if self.eventStatus == 1: #if the event occured
             eventRange = self.eventList[1] - self.eventList[0] #basically this should be equal Tmax 
                 rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius.
                 Low = float(eventTime) - rangeRadius
@@ -114,11 +114,18 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             if self.match(model, state): #apply match function 
                 match_count += 1 #call updateExperience?
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
-                if self.phenotype == condition: #FIX or call makeCorrectSet
-                    correct_count += 1 #call updateCorrect?
-                    self.updateError(eventTime,eventStatus)
-                else:    
-                    self.updateIncorrectError()
+                if eventStatus = 1:
+                    if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
+                        correct_count += 1
+                        self.updateError(eventTime,eventStatus)
+                    else: 
+                        self.updateIncorrectError()
+                else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
+                    if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]) or (float(eventTime) < float(self.popSet[ref].eventInterval[0]):
+                        correct_count += 1
+                        self.updateError(eventTime,eventStatus)
+                    else:    
+                        self.updateIncorrectError()
         try:
             self.accuracy = updateAccuracy(model) #updateError has now been called above
         except:
