@@ -20,6 +20,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.aveMatchSetSize = None
         self.deletionProb = None
         
+        #Individual Survival Prediction -----------------------------------------------
+        self.coverTimes = [] #for each rule, a list of eventTimes from instances that were correctly covered 
+        
         #Experience Management ---------------------------------------------
         self.timeStampGA = None
         self.initTimeStamp = None
