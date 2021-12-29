@@ -121,6 +121,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
                         correct_count += 1
                         self.updateError(eventTime,eventStatus)
+                        #self.updateCorrectTimes(XXX)
                     else: 
                         self.updateIncorrectError()
                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
