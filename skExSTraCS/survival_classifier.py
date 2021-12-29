@@ -116,7 +116,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
                 if self.phenotype == condition: #FIX or call makeCorrectSet
                     correct_count += 1 #call updateCorrect?
-                    self.updateError(eventTime)
+                    self.updateError(eventTime,eventStatus)
                 else:    
                     self.updateIncorrectError()
         try:
@@ -254,29 +254,31 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #----------------------------------------------------------------------------------------------------------------------------
 # updateError: updates the error for a classifier until all instances have been seen
 #----------------------------------------------------------------------------------------------------------------------------             
-    def updateError(self,eventTime):
+    def updateError(self,eventTime,eventStatus):
 #        if not self.epochComplete: Removed this 
-        high = self.eventInterval[1]
-        low = self.eventInterval[0]
-        if self.eventInterval[1] > self.eventList[1]:
-            high = self.eventList[1]
-        if self.eventInterval[0] < self.eventList[0]:
-            low = self.eventList[0]
+        if eventStatus == 1:
+            high = self.eventInterval[1]
+            low = self.eventInterval[0]
+            if self.eventInterval[1] > self.eventList[1]:
+                high = self.eventList[1]
+            if self.eventInterval[0] < self.eventList[0]:
+                low = self.eventList[0]
                 
-        rangeCentroid = (high + low) / 2.0
-        error = abs(rangeCentroid - eventTime)  #this or self.eventTime?
-        adjustedError = error / (self.eventList[1] - self.eventList[0])
-
-        self.errorSum += adjustedError  #Error is fraction of total phenotype range (i.e. maximum possible error)
+            rangeCentroid = (high + low) / 2.0
+            error = abs(rangeCentroid - eventTime)  #this or self.eventTime?
+            adjustedError = error / (self.eventList[1] - self.eventList[0]) #Error is fraction of total phenotype range (i.e. maximum possible error)
+        else: #if the eventStatus is 0 (censored instance)
+            adjustedError = 0 #do not update the error, i.e., adjusted error for this instance is 0
+        self.errorSum += adjustedError  
         self.errorCount += 1        
             
 #----------------------------------------------------------------------------------------------------------------------------
 # updateIncorrectError: adds the max error (1) to errorSum if the instance falls in [I] 
 #----------------------------------------------------------------------------------------------------------------------------                 
     def updateIncorrectError(self):        
-        if not self.epochComplete:
-            self.errorSum += 1.0
-            self.errorCount += 1        
+#        if not self.epochComplete:
+        self.errorSum += 1.0
+        self.errorCount += 1        
 #----------------------------------------------------------------------------------------------------------------------------
 # updateAccuracy: update the accuracy for a classifier. Going to change this so it's related to the ERROR. Might update to MFF
 #---------------------------------------------------------------------------------------------------------------------------- 
