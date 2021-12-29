@@ -181,7 +181,7 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------   
     def characterizeEventTimes(self,dataEventTimes,model): 
         timeeventList = [] #create an empty list 
-        for currentInstanceIndex in range(len(eventTimes)): 
+        for currentInstanceIndex in range(len(dataEventTimes)): 
             target = dataEventTimes[currentInstanceIndex] 
             timeeventList.append(target)
             #Find Minimum and Maximum values for the continuous phenotype so we know the range.
