@@ -2,14 +2,15 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import recall_score
 import numpy as np
-from skExSTraCS.Timer import Timer
-from skExSTraCS.OfflineEnvironment import OfflineEnvironment
+from skExSTraCS.survival_Timer import Timer
+from skExSTraCS.survival_OfflineEnvironment import OfflineEnvironment
 from skExSTraCS.ExpertKnowledge import ExpertKnowledge
 from skExSTraCS.AttributeTracking import AttributeTracking
-from skExSTraCS.ClassifierSet import ClassifierSet
-from skExSTraCS.Prediction import Prediction
+from skExSTraCS.survival_classifierSet import ClassifierSet
+from skExSTraCS.survival_prediction import Prediction
 from skExSTraCS.RuleCompaction import RuleCompaction
 from skExSTraCS.IterationRecord import IterationRecord
+from skExSTraCS.survival_pareto import Pareto
 import copy
 import time
 import pickle
@@ -415,20 +416,21 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
                                   self.timer.globalInit, self.timer.globalAdd, self.timer.globalRuleCmp,self.timer.globalDeletion,
                                   self.timer.globalSubsumption, self.timer.globalSelection, self.timer.globalEvaluation)
 
-    def runIteration(self,state_phenotype):
+    def runIteration(self,state_event):
         # Reset tracking object counters
         self.trackingObj.resetAll()
 
         #Make [M]
-        self.population.makeMatchSet(self,state_phenotype)
+        self.population.makeMatchSet(self,state_event)
 
         #Track Training Accuracy
         if self.track_accuracy_while_fit:
             self.timer.startTimeEvaluation()
             prediction = Prediction(self,self.population)
-            phenotypePrediction = prediction.getDecision()
+            eventPrediction = prediction.getDecision()
+            survivalPrediction = prediction.getSurvProb()
 
-            if phenotypePrediction == state_phenotype[1]:
+            if eventPrediction == state_event[1]:
                 if len(self.trackingAccuracy) == self.movingAvgCount:
                     del self.trackingAccuracy[0]
                 self.trackingAccuracy.append(1)
@@ -440,7 +442,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             self.timer.stopTimeEvaluation()
 
         #Make [C]
-        self.population.makeCorrectSet(state_phenotype[1])
+        self.population.makeCorrectSet(state_event[1])
 
         #Update Parameters
         self.population.updateSets(self)
@@ -461,7 +463,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             self.timer.stopTimeAT()
 
         #Run GA
-        self.population.runGA(self,state_phenotype[0],state_phenotype[1])
+        self.population.runGA(self,state_event[0],state_event[1])
 
         #Deletion
         self.population.deletion(self)
@@ -598,7 +600,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         predList = self.predict(X)
         return balanced_accuracy_score(y,predList)
 
-    ##*************** More Evaluation Methods ****************
+    ##*************** More Evaluation Methods **************** Need to add to this to evaluate survival probability distribution
 
     def get_final_training_accuracy(self,RC=False):
         if self.hasTrained or RC:
