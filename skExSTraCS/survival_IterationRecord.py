@@ -34,20 +34,30 @@ class IterationRecord():
         25-total selection time at end of iteration
         26-total evaluation time at end of iteration
     '''
+    
+#------------------------------------------------------------------------------------------------------------
+# Initalize tracking dictionary
+#------------------------------------------------------------------------------------------------------------
 
     def __init__(self):
         self.trackingDict = {}
-
+        
+#------------------------------------------------------------------------------------------------------------
+# addToTracking: defines the parameters to add to the tracking dictionary after each iteration. 
+#------------------------------------------------------------------------------------------------------------
     def addToTracking(self,iterationNumber,accuracy,avgPopGenerality,macroSize,microSize,mSize,cSize,iterAvg,
                       subsumptionCount,crossoverCount,mutationCount,coveringCount,deletionCount,RCCount,
                       globalTime,matchingTime,coveringTime,crossoverTime,mutationTime,ATTime,EKTime,initTime,addTime,
                       RCTime,deletionTime,subsumptionTime,selectionTime,evaluationTime):
-
+        
+#The interation number is the key, and all of the following parameters are the values
         self.trackingDict[iterationNumber] = [accuracy,avgPopGenerality,macroSize,microSize,mSize,cSize,iterAvg,
                                    subsumptionCount,crossoverCount,mutationCount,coveringCount,deletionCount,RCCount,
                                    globalTime,matchingTime,coveringTime,crossoverTime,mutationTime,ATTime,EKTime,initTime,
                                    addTime,RCTime,deletionTime,subsumptionTime,selectionTime,evaluationTime]
-
+#------------------------------------------------------------------------------------------------------------
+# exportTrackingToCSV: writes the following information to a csv file
+#------------------------------------------------------------------------------------------------------------
     def exportTrackingToCSV(self,filename='iterationData.csv'):
         #Exports each entry in Tracking Array as a column
         with open(filename,mode='w') as file:
@@ -60,13 +70,16 @@ class IterationRecord():
                              "Total Global Time","Total Matching Time","Total Covering Time","Total Crossover Time",
                              "Total Mutation Time","Total Attribute Tracking Time","Total Expert Knowledge Time","Total Model Initialization Time",
                              "Total Classifier Add Time","Total Rule Compaction Time",
-                             "Total Deletion Time","Total Subsumption Time","Total Selection Time","Total Evaluation Time"])
+                             "Total Deletion Time","Total Subsumption Time","Total Selection Time","Total Evaluation Time"]) #column names
 
-            for k,v in sorted(self.trackingDict.items()):
+            for k,v in sorted(self.trackingDict.items()): #for each item (i.e., key-value pair) in trackingDict, write the key and 26 parameter values to a row
                 writer.writerow([k,v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13],v[14],v[15],v[16],v[17],v[18],v[19],v[20],v[21],v[22],v[23],v[24],v[25],v[26]])
         file.close()
-
-    def exportPop(self,model,popSet,headerNames=np.array([]),className='eventTime',filename='populationData.csv'):
+        
+#------------------------------------------------------------------------------------------------------------
+# exportPop: exports the population of rules and their parameters
+#------------------------------------------------------------------------------------------------------------
+    def exportPop(self,model,popSet,headerNames=np.array([]),EventInterval ='EventInterval',filename='populationData.csv'):
         numAttributes = model.env.formatData.numAttributes
 
         headerNames = headerNames.tolist() #Convert to Python List
@@ -98,11 +111,11 @@ class IterationRecord():
                     else:
                         a.append("#")
 
-                if isinstance(classifier.phenotype,list):
-                    s = str(classifier.phenotype[0])+","+str(classifier.phenotype[1])
+                if isinstance(classifier.eventInterval,list):
+                    s = str(classifier.eventInterval[0])+","+str(classifier.eventInterval[1])
                     a.append(s)
                 else:
-                    a.append(classifier.phenotype)
+                    a.append(classifier.eventInterval)
                 a.append(classifier.fitness)
                 a.append(classifier.accuracy)
                 a.append(classifier.numerosity)
@@ -117,7 +130,10 @@ class IterationRecord():
                 writer.writerow(a)
         file.close()
 
-    def exportPopDCAL(self,model,popSet,headerNames=np.array([]),className='phenotype',filename='populationData.csv'):
+#------------------------------------------------------------------------------------------------------------
+# exportPopDCAL: this one does the same as above, but all of the attributes are in a single list, not in an individual column
+#------------------------------------------------------------------------------------------------------------
+    def exportPopDCAL(self,model,popSet,headerNames=np.array([]),EventInterval='EventInterval',filename='populationData.csv'):
 
         numAttributes = model.env.formatData.numAttributes
 
@@ -134,7 +150,7 @@ class IterationRecord():
         with open(filename, mode='w') as file:
             writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-            writer.writerow(["Specified Values","Specified Attribute Names"]+[className]+["Fitness","Accuracy","Numerosity","Avg Match Set Size","TimeStamp GA","Iteration Initialized","Specificity","Deletion Probability","Correct Count","Match Count","Epoch Complete"])
+            writer.writerow(["Specified Values","Specified Attribute Names"]+[EventInterval]+["Fitness","Accuracy","Numerosity","Avg Match Set Size","TimeStamp GA","Iteration Initialized","Specificity","Deletion Probability","Correct Count","Match Count","Epoch Complete"])
 
             classifiers = popSet
             for classifier in classifiers:
@@ -158,11 +174,11 @@ class IterationRecord():
                 a.append(headerString[:-2])
 
                 #Add phenotype information
-                if isinstance(classifier.phenotype, list):
-                    s = str(classifier.phenotype[0]) + "," + str(classifier.phenotype[1])
+                if isinstance(classifier.eventInterval, list):
+                    s = str(classifier.eventInterval[0]) + "," + str(classifier.eventInterval[1])
                     a.append(s)
                 else:
-                    a.append(classifier.phenotype)
+                    a.append(classifier.eventInterval)
 
                 #Add statistics
                 a.append(classifier.fitness)
