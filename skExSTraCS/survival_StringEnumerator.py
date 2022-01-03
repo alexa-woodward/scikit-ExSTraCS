@@ -7,17 +7,17 @@ from warnings import simplefilter
 simplefilter(action='ignore', category=FutureWarning)
 
 class StringEnumerator:
-    def __init__(self, inputFile, survivalTime, censoringIndicator):
-        self.survivalTime = survivalTime #phenotype becomes survival time
-        self.censorIndicator = censoringIndicator #adding in censoring indicator
+    def __init__(self, inputFile, eventTime, eventStatus):
+        self.eventTime = eventTime #phenotype becomes survival time
+        self.eventStatus = eventStatus #adding in censoring indicator
         
         self.map = {} #Dictionary of header names: Attribute dictionaries
         data = pd.read_csv(inputFile, sep=',')  # Puts data from csv into indexable np arrays
         data = data.fillna("NA")
-        self.dataFeatures = data.drop(survivalTime, axis=1).values #splits into an array of instances
-        self.dataEventTimes = data[survivalTime].values
+        self.dataFeatures = data.drop(eventTime, axis=1).values #splits into an array of instances
+        self.dataEventTimes = data[eventTime].values
         self.dataEventStatus = data[censoringIndicator].values
-        self.dataHeaders = data.drop([survivalTime,censoringIndicator], axis=1).columns.values
+        self.dataHeaders = data.drop([eventTime,eventStaus], axis=1).columns.values
         
         #----------------------------------------------
         # Create temp arrays for the features and two outcome variables
@@ -87,15 +87,15 @@ class StringEnumerator:
     def change_class_name(self,newName):
         if newName in self.dataHeaders:
             raise Exception("New Class Name Cannot Be An Already Existing Data Header Name")
-        if self.survivalTime in self.map.keys():
-            self.map[self.newName] = self.map.pop(self.survivalTime)
-        self.survivalTime = newName
+        if self.eventTune in self.map.keys():
+            self.map[self.newName] = self.map.pop(self.eventTime)
+        self.eventTime = newName
         
 #--------------------------------------------------------------------------------------------------------------------
 # change_header_name: raises an error if new class names already exists 
 #-------------------------------------------------------------------------------------------------------------------- 
     def change_header_name(self,currentName,newName):
-        if newName in self.dataHeaders or newName == self.survivalTime:
+        if newName in self.dataHeaders or newName == self.eventTime:
             raise Exception("New Class Name Cannot Be An Already Existing Data Header or Phenotype Name")
         if currentName in self.dataHeaders:
             headerIndex = np.where(self.dataHeaders == currentName)[0][0]
@@ -159,7 +159,7 @@ class StringEnumerator:
             self.add_class_converter(np.array(uniqueItems))
             
 #--------------------------------------------------------------------------------------------------------------------
-# 
+# convert_all_attributes:
 #-------------------------------------------------------------------------------------------------------------------- 
     def convert_all_attributes(self):
         for attribute in self.dataHeaders:
@@ -169,14 +169,11 @@ class StringEnumerator:
                     if (state[i] in self.map[attribute].keys()):
                         state[i] = self.map[attribute][state[i]]
                         
-#--------------------------------------------------------------------------------------------------------------------
-# 
-#-------------------------------------------------------------------------------------------------------------------- 
         if self.classLabel in self.map.keys():
-            for state in self.dataPhenotypes:
+            for state in self.dataEventTimes:
                 if (state in self.map[self.classLabel].keys()):
-                    i = np.where(self.dataPhenotypes == state)
-                    self.dataPhenotypes[i] = self.map[self.classLabel][state]
+                    i = np.where(self.dataEventTime == state)
+                    self.dataEventTimes[i] = self.map[self.classLabel][state]
                     
 #--------------------------------------------------------------------------------------------------------------------
 # 
