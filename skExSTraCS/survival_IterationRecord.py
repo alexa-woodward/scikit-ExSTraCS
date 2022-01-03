@@ -95,7 +95,7 @@ class IterationRecord():
         with open(filename, mode='w') as file:
             writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-            writer.writerow(headerNames+[className]+["Fitness","Accuracy","Numerosity","Avg Match Set Size","TimeStamp GA","Iteration Initialized","Specificity","Deletion Probability","Correct Count","Match Count","Epoch Complete"])
+            writer.writerow(headerNames+[EventInterval]+["Fitness","Accuracy","Numerosity","Avg Match Set Size","TimeStamp GA","Iteration Initialized","Specificity","Deletion Probability","Correct Count","Match Count","Epoch Complete"])
             classifiers = popSet
             for classifier in classifiers:
                 a = []
@@ -173,7 +173,7 @@ class IterationRecord():
                 a.append(valueString[:-2])
                 a.append(headerString[:-2])
 
-                #Add phenotype information
+                #Add event interval (previously phenotype) information
                 if isinstance(classifier.eventInterval, list):
                     s = str(classifier.eventInterval[0]) + "," + str(classifier.eventInterval[1])
                     a.append(s)
