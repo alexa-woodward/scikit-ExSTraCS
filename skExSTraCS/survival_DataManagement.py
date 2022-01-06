@@ -1,7 +1,7 @@
 # Import required moduldes------------------------------------
 import numpy as np
 import math
-from survival_pareto import *
+from survival_Pareto import *
 #-------------------------------------------------------------
 
 class DataManagement:
