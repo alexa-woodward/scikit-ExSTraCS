@@ -4,7 +4,7 @@ import random
 class Prediction():
     def __init__(self,model,population):
         self.decision = None
-        self.probabilities = {}
+        self.probabilities = {} #dictonary of probabilities of each class
         self.hasMatch = len(population.matchSet) != 0
 
         #Discrete Phenotypes
@@ -14,13 +14,13 @@ class Prediction():
             self.tieBreak_TimeStamp = {}
 
             for eachClass in model.env.formatData.phenotypeList:
-                self.vote[eachClass] = 0.0
+                self.vote[eachClass] = 0.0 
                 self.tieBreak_Numerosity[eachClass] = 0.0
                 self.tieBreak_TimeStamp[eachClass] = 0.0
 
-            for ref in population.matchSet:
-                cl = population.popSet[ref]
-                self.vote[cl.phenotype] += cl.fitness * cl.numerosity * model.env.formatData.classPredictionWeights[cl.phenotype]
+            for ref in population.matchSet: #for each rule in the match set, 
+                cl = population.popSet[ref] #set cl = to that classifier
+                self.vote[cl.phenotype] += cl.fitness * cl.numerosity * model.env.formatData.classPredictionWeights[cl.phenotype] #the value for the vote of the (predicted class) = the fitness times the numerosity times the prediction wieghts of the classifier's phenotype
                 self.tieBreak_Numerosity[cl.phenotype] += cl.numerosity
                 self.tieBreak_TimeStamp[cl.phenotype] += cl.initTimeStamp
 
