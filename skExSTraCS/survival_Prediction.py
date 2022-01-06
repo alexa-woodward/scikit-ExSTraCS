@@ -37,6 +37,7 @@ class Prediction:
         self.decision = None
         self.survProb = None
         self.times = None
+        self.matchCoverTimes = [] #create an empty list to append coverTimes from the matchset rules
         
         #-------------------------------------------------------
         # CONTINUOUS PHENOTYPE
@@ -83,14 +84,19 @@ class Prediction:
 #-----------------------------------------------------------------------------------------------------------------
 # individualSurvivalProb: generates the survival probability distribution for a test instance 
 #-----------------------------------------------------------------------------------------------------------------           
-    def individualSurvivalProb(self,correctTimes,eventList)
-      empDist = np.asarray(sorted(correctTimes)).reshape((len(empDist), 1)) #sort the correct times, set as the empricial distribution
+    def individualSurvivalProb(self,model,population,eventList)
+        for ref in population.matchSet:
+            cl = population.popSet[ref]
+            if len(cl.coverTimes) > 0:
+                self.matchCoverTimes.append(cl.coverTimes)
+      empDist = np.asarray(sorted(matchCoverTimes)).reshape((len(matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
       KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
       KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
       
       self.times = np.asarray([time for time in range(0, eventList[1]+1)]).reshape((len(values), 1))
       probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
       self.survProb = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
+      return self.survProb #is this needed?
 
       
       #1. get coverage from other matched instances. Is this stored anywhere already? If not need to make new function to store these. 
@@ -108,6 +114,17 @@ class Prediction:
             if cl.eventInterval[0] <= low and cl.eventInterval[1] >= high: #if classifier range subsumes segment range.
                 fitSum += cl.fitness
         return fitSum
+      
+#-----------------------------------------------------------------------------------------------------------------
+# getProbabilities:  Returns probabilities of each event from the decision THIS
+#-----------------------------------------------------------------------------------------------------------------       
+    def getProbabilities(self):
+        a = np.empty(len(sorted(self.probabilities.items())))
+        counter = 0
+        for k, v in sorted(self.probabilities.items()):
+            a[counter] = v
+            counter += 1
+        return a      
     
 #-----------------------------------------------------------------------------------------------------------------
 # getDecision: returns the eventTime prediction
@@ -116,7 +133,7 @@ class Prediction:
         return self.decision
 
 #-----------------------------------------------------------------------------------------------------------------
-# getSurvProb: returns the survival distribution, NOT CALLED ANYWHERE YET
+# getSurvProb: returns the survival distribution, NOT CALLED ANYWHERE YET - CHANGE THIS - to "PREDICT_PROBA" in survival_ExSTraCS.py
 #-----------------------------------------------------------------------------------------------------------------  
     def getSurvProb(self):
         return self.survProb
