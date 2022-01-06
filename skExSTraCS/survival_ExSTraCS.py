@@ -4,13 +4,13 @@ from sklearn.metrics import recall_score
 import numpy as np
 from skExSTraCS.survival_Timer import Timer
 from skExSTraCS.survival_OfflineEnvironment import OfflineEnvironment
-from skExSTraCS.ExpertKnowledge import ExpertKnowledge
-from skExSTraCS.AttributeTracking import AttributeTracking
-from skExSTraCS.survival_classifierSet import ClassifierSet
-from skExSTraCS.survival_prediction import Prediction
-from skExSTraCS.RuleCompaction import RuleCompaction
-from skExSTraCS.IterationRecord import IterationRecord
-from skExSTraCS.survival_pareto import Pareto
+from skExSTraCS.survival_ExpertKnowledge import ExpertKnowledge
+from skExSTraCS.survival_AttributeTracking import AttributeTracking
+from skExSTraCS.survival_ClassifierSet import ClassifierSet
+from skExSTraCS.survival_Prediction import Prediction
+from skExSTraCS.survival_RuleCompaction import RuleCompaction
+from skExSTraCS.survival_IterationRecord import IterationRecord
+from skExSTraCS.survival_Pareto import Pareto
 import copy
 import time
 import pickle
@@ -274,7 +274,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         else:
             self.iterationCount = 0
             self.population = ClassifierSet()
-
+#-----------------------------------------------------------------------------------------------------------------
+# checkIsInt:
+#-----------------------------------------------------------------------------------------------------------------  
     def checkIsInt(self, num):
         try:
             n = float(num)
@@ -284,7 +286,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
                 return False
         except:
             return False
-
+#-----------------------------------------------------------------------------------------------------------------
+# checkIsFloat:
+#-----------------------------------------------------------------------------------------------------------------  
     def checkIsFloat(self, num):
         try:
             n = float(num)
@@ -293,6 +297,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             return False
 
     ##*************** Fit ****************
+#-----------------------------------------------------------------------------------------------------------------
+# fit:
+#-----------------------------------------------------------------------------------------------------------------      
     def fit(self, X, y):
         """Scikit-learn required: Supervised training of exstracs
              Parameters
@@ -405,7 +412,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.saveFinalMetrics()
         self.hasTrained = True
         return self
-
+#-----------------------------------------------------------------------------------------------------------------
+# addToTracking:
+#-----------------------------------------------------------------------------------------------------------------  
     def addToTracking(self,accuracy,aveGenerality):
         self.record.addToTracking(self.iterationCount, accuracy, aveGenerality, self.trackingObj.macroPopSize,
                                   self.trackingObj.microPopSize, self.trackingObj.matchSetSize,self.trackingObj.correctSetSize,
@@ -415,7 +424,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
                                   self.timer.globalCrossover, self.timer.globalMutation, self.timer.globalAT,self.timer.globalEK,
                                   self.timer.globalInit, self.timer.globalAdd, self.timer.globalRuleCmp,self.timer.globalDeletion,
                                   self.timer.globalSubsumption, self.timer.globalSelection, self.timer.globalEvaluation)
-
+#-----------------------------------------------------------------------------------------------------------------
+# runIteration: 
+#-----------------------------------------------------------------------------------------------------------------  
     def runIteration(self,state_event):
         # Reset tracking object counters
         self.trackingObj.resetAll()
@@ -478,13 +489,18 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.population.clearSets()
 
     ##*************** Population Reboot ****************
+#-----------------------------------------------------------------------------------------------------------------
+# saveFinalMetrics:
+#-----------------------------------------------------------------------------------------------------------------      
     def saveFinalMetrics(self):
         self.finalMetrics = [self.learning_iterations,self.timer.globalTime, self.timer.globalMatching,self.timer.globalCovering,
                              self.timer.globalCrossover, self.timer.globalMutation, self.timer.globalAT,self.timer.globalEK,
                              self.timer.globalInit, self.timer.globalAdd, self.timer.globalRuleCmp,self.timer.globalDeletion,
                              self.timer.globalSubsumption, self.timer.globalSelection, self.timer.globalEvaluation,copy.deepcopy(self.AT),
                              copy.deepcopy(self.env),copy.deepcopy(self.population.popSet),self.preRCPop]
-
+#-----------------------------------------------------------------------------------------------------------------
+# pickle_model:
+#-----------------------------------------------------------------------------------------------------------------  
     def pickle_model(self,filename=None,saveRCPop=False):
         if self.hasTrained and self.learning_iterations == self.iterationCount: # Check hasFit, and there is new stuff to pickle
             if filename == None:
@@ -501,7 +517,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             raise Exception("Pickle not allowed, as there is nothing new to pickle.")
         else:
             raise Exception("There is no final model to pickle, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+# rebootPopulation:
+#-----------------------------------------------------------------------------------------------------------------  
     def rebootPopulation(self):
         file = open(self.reboot_filename,'rb')
         rawData = pickle.load(file)
@@ -519,7 +537,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.iterationCount = rawData[0]
         self.AT = rawData[15]
         self.env = rawData[16]
-
+#-----------------------------------------------------------------------------------------------------------------
+# rebootTimer:
+#-----------------------------------------------------------------------------------------------------------------  
     def rebootTimer(self):
         file = open(self.reboot_filename, 'rb')
         rawData = pickle.load(file)
@@ -542,6 +562,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.timer.globalEvaluation = rawData[14]
 
     ##*************** Predict and Score ****************
+#-----------------------------------------------------------------------------------------------------------------
+# predict: predicts the time of event (centroid of the maximal overlapping intervals)
+#-----------------------------------------------------------------------------------------------------------------      
     def predict(self, X):
         """Scikit-learn required: Test Accuracy of ExSTraCS
             Parameters
@@ -564,12 +587,16 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             state = X[inst]
             self.population.makeEvalMatchSet(self,state)
             prediction = Prediction(self, self.population)
-            phenotypeSelection = prediction.getDecision()
-            predList.append(phenotypeSelection)
+            eventPrediction = prediction.getDecision()
+            predList.append(eventPrediction)
             self.population.clearSets()
         return np.array(predList)
 
-    def predict_proba(self, X):
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------      
+            
+    def predict_proba(self, X): # change this to call getSurvProb survivalPrediction = prediction.getSurvProb() 
         """Scikit-learn required: Test Accuracy of ExSTraCS
             Parameters
             X: array-like {n_samples, n_features} Test instances to classify. ALL INSTANCE ATTRIBUTES MUST BE NUMERIC
@@ -591,24 +618,31 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             state = X[inst]
             self.population.makeEvalMatchSet(self,state)
             prediction = Prediction(self, self.population)
-            probs = prediction.getProbabilities()
+            survivalPrediction = prediction.getSurvProb() 
             predList.append(probs)
             self.population.clearSets()
         return np.array(predList)
 
-    def score(self,X,y):
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
+    def score(self,X,y): #change this to C-index code
         predList = self.predict(X)
         return balanced_accuracy_score(y,predList)
 
     ##*************** More Evaluation Methods **************** Need to add to this to evaluate survival probability distribution
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def get_final_training_accuracy(self,RC=False):
         if self.hasTrained or RC:
             originalTrainingData = self.env.formatData.savedRawTrainingData
             return self.score(originalTrainingData[0], originalTrainingData[1])
         else:
             raise Exception("There is no final training accuracy to return, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def get_final_instance_coverage(self):
         if self.hasTrained:
             numCovered = 0
@@ -622,19 +656,25 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             return numCovered/len(originalTrainingData[0])
         else:
             raise Exception("There is no final instance coverage to return, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def get_final_attribute_specificity_list(self):
         if self.hasTrained:
             return self.population.getAttributeSpecificityList(self)
         else:
             raise Exception("There is no final attribute specificity list to return, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def get_final_attribute_accuracy_list(self):
         if self.hasTrained:
             return self.population.getAttributeAccuracyList(self)
         else:
             raise Exception("There is no final attribute accuracy list to return, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def get_final_attribute_tracking_sums(self):
         if self.hasTrained and self.AT != None:
             return self.AT.getSumGlobalAttTrack(self)
@@ -642,7 +682,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             raise Exception("There are no final attribute tracking sums to return, as AT was False")
         else:
             raise Exception("There are no final attribute tracking sums to return, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def get_final_attribute_coocurrences(self,headers,maxNumAttributesToTrack=50):
         #Return a 2D list of [[attr1Name, attr2Name, specificity, accuracy weighted specificity]...]
         if self.hasTrained:
@@ -677,7 +719,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         else:
             raise Exception(
                 "There are no final attribute cooccurences to return, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def get_attribute_tracking_scores(self,instance_labels=np.array([])):
         if self.hasTrained:
             retList = []
@@ -691,12 +735,17 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             raise Exception("There is no AT scores to return, as the ExSTraCS model has not been trained")
 
     ##Export Methods##
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------      
     def export_iteration_tracking_data(self,filename='iterationData.csv'):
         if self.hasTrained:
             self.record.exportTrackingToCSV(filename)
         else:
             raise Exception("There is no tracking data to export, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def export_final_rule_population(self,headerNames=np.array([]),className="phenotype",filename='populationData.csv',DCAL=True,RCPopulation=False):
         if self.hasTrained:
             if RCPopulation:
@@ -712,6 +761,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             raise Exception("There is no rule population to export, as the ExSTraCS model has not been trained")
 
     ##Rule Compaction Method ##
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------      
     def post_training_rule_compaction(self,method='QRF'):
         if self.hasTrained:
             oldRC = copy.deepcopy(self.rule_compaction)
@@ -721,9 +773,14 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             self.saveFinalMetrics()
         else:
             raise Exception("There is no rule population to compact, as the ExSTraCS model has not been trained")
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
 class TempTrackingObj():
     #Tracks stats of every iteration (except accuracy, avg generality, and times)
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------      
     def __init__(self):
         self.macroPopSize = 0
         self.microPopSize = 0
@@ -736,7 +793,9 @@ class TempTrackingObj():
         self.coveringCount = 0
         self.deletionCount = 0
         self.RCCount = 0
-
+#-----------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------  
     def resetAll(self):
         self.macroPopSize = 0
         self.microPopSize = 0
