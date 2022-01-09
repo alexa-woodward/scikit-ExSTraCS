@@ -83,7 +83,9 @@ class Prediction:
             
 #-----------------------------------------------------------------------------------------------------------------
 # individualSurvivalProb: generates the survival probability distribution for a test instance 
-#-----------------------------------------------------------------------------------------------------------------           
+#----------------------------------------------------------------------------------------------------------------- 
+#need to figure out where this gets called 
+
     def individualSurvivalProb(self,model,population,eventList)
         for ref in population.matchSet:
             cl = population.popSet[ref]
