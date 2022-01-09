@@ -439,9 +439,9 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             self.timer.startTimeEvaluation()
             prediction = Prediction(self,self.population)
             eventPrediction = prediction.getDecision()
-            survivalPrediction = prediction.getSurvProb()
+            #survivalPrediction = prediction.getSurvProb() #unsure if this is needed here 
 
-            if eventPrediction == state_event[1]:
+            if eventPrediction == state_event[1]: #this might need to change? if the eventPrediction = the time of event (for this instance)
                 if len(self.trackingAccuracy) == self.movingAvgCount:
                     del self.trackingAccuracy[0]
                 self.trackingAccuracy.append(1)
