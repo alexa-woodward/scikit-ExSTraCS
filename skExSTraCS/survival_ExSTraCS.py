@@ -300,7 +300,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
 #-----------------------------------------------------------------------------------------------------------------
 # fit:
 #-----------------------------------------------------------------------------------------------------------------      
-    def fit(self, X, y):
+    def fit(self, X, y, z):
         """Scikit-learn required: Supervised training of exstracs
              Parameters
             X: array-like {n_samples, n_features} Training instances. ALL INSTANCE ATTRIBUTES MUST BE NUMERIC or NAN
@@ -316,8 +316,10 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
                         float(value)
             for value in y:
                 float(value)
+            for value in z:
+                float(value)
         except:
-            raise Exception("X and y must be fully numeric")
+            raise Exception("X, y, and z must be fully numeric")
 
         # Handle repeated fit calls
         if self.learning_iterations == self.iterationCount and self.reboot_filename != None:
@@ -340,7 +342,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.timer.startTimeInit()
 
         # Set up offline environment w/ dataset
-        self.env = OfflineEnvironment(X,y,self)
+        self.env = OfflineEnvironment(X,y,z,self)
 
         # Set up tracking metrics
         self.trackingAccuracy = []
