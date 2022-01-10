@@ -389,11 +389,12 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #----------------------------------------------------------------------------------------------------------------------------
 # subsumes: Returns if the classifier (self) subsumes cl - updated 11/29
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def subsumes(self,model,cl): 
+    def subsumes(self,model,cl):
         #FOR SURVIVAL DATA
-        return self.event[0] >= cl.event[0] and self.event[1] <= cl.event[1]:
+        if self.event[0] >= cl.event[0] and self.event[1] <= cl.event[1]:
                 if self.isSubsumer() and self.isMoreGeneral(cl):
-
+                    return True
+        return False
 #----------------------------------------------------------------------------------------------------------------------------
 # isMoreGeneral: Returns if the classifier (self) is more general than cl. Check that all attributes specified in self are also specified in cl. Should remain the same
 #---------------------------------------------------------------------------------------------------------------------------- 
