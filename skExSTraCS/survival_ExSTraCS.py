@@ -618,8 +618,8 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             state = X[inst]
             self.population.makeEvalMatchSet(self,state)
             prediction = Prediction(self, self.population)
-            survivalPrediction = prediction.getSurvProb() 
-            predList.append(probs)
+            indSurvivalDist = prediction.getSurvProbDist() 
+            predList.append(indSurvivalDist) #returns survival probability distribution
             self.population.clearSets()
         return np.array(predList)
 
