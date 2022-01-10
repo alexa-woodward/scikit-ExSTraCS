@@ -86,7 +86,7 @@ class Prediction:
 #----------------------------------------------------------------------------------------------------------------- 
 #need to figure out where this gets called 
 
-    def individualSurvivalProbDist(self,model,population,eventList)
+    def individualSurvivalProbDist(self,model,population,eventList):
         for ref in population.matchSet:
             cl = population.popSet[ref]
             if len(cl.coverTimes) > 0:
