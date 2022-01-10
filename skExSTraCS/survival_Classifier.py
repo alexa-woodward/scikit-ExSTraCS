@@ -146,7 +146,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #         print self.eventRanked
 #         print self.eventList
         while ref < len(eventRanked) and eventRanked[ref][0] <= self.eventInterval[1]:
-            if eventRanked[ref][0] >= self.eventInterval[0] and eventRanked[ref][1] = 1:
+            if eventRanked[ref][0] >= self.eventInterval[0] and eventRanked[ref][1] == 1:
                 count += 1
             ref += 1
 
