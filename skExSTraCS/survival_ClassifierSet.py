@@ -84,7 +84,7 @@ class ClassifierSet:
                 if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
                         self.correctSet.append(ref)
             else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
-                if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]) or (float(eventTime) < float(self.popSet[ref].eventInterval[0]):
+                if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0])) or (float(eventTime) < float(self.popSet[ref].eventInterval[0]):
                         self.correctSet.append(ref)                                                                                                                              
 #--------------------------------------------------------------------------------------------------------------------
 # updateSets: Updates all relevant parameters in the current match and correct sets.
