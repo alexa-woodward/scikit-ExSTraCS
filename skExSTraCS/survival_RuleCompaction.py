@@ -20,8 +20,13 @@ class RuleCompaction:
 
         model.trackingObj.RCCount = self.originalPopLength - len(self.pop.popSet)
         model.population = self.pop
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------------------------------------------------------------------------
     def approach_Fu1(self,model):
+       """ This approach completely follows Fu's first approach. In the third stage, the number of instances a rule matched is used to rank 
+        the rules and guide covering. Ranking list is updated each time some instances are covered and removed from the training set. """
+    
         lastGood_popSet = sorted(self.pop.popSet, key=self.numerositySort)
         self.pop.popSet = lastGood_popSet[:]
 
@@ -127,8 +132,13 @@ class RuleCompaction:
                 keepGoing = False
 
         self.pop.popSet = finalClassifiers
-
+        
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------
     def approach_Fu2(self,model):
+        """ This approach completely follows Fu's second approach. All three stages use accuracy to sort rules."""
+        #Order Classifier Set---------------------------------------------------------------------------------------------------------        
         lastGood_popSet = sorted(self.pop.popSet, key=self.numerositySort)
         self.pop.popSet = lastGood_popSet[:]
 
@@ -173,16 +183,22 @@ class RuleCompaction:
                 self.pop.popSet.append(heldClassifier)
             else:
                 RefAccuracy = newAccuracy
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------
     def approach_CRA2(self,model):
+        """ This approach is based on Dixon's and Shoeleh's method. For each instance, form a match set and then a correct set. The most useful rule in 
+            the correct set is moved into the final ruleset. In this approach, the most useful rule has the largest product of accuracy
+            and generality."""
         retainedClassifiers = []
         matchSet = []
         correctSet = []
         model.env.resetDataRef()
         for j in range(model.env.formatData.numTrainInstances):
-            state_phenotype = model.env.getTrainInstance()
-            state = state_phenotype[0]
-            phenotype = state_phenotype[1]
+            state_event= model.env.getTrainInstance()
+            state = state_event[0]
+            eventTime = state_event[1]
+            eventStatus = state_event[2]
 
             # Create MatchSet
             for i in range(len(self.pop.popSet)):
@@ -193,8 +209,12 @@ class RuleCompaction:
             # Create CorrectSet
             for i in range(len(matchSet)):
                 ref = matchSet[i]
-                if self.pop.popSet[ref].phenotype == phenotype:
-                    correctSet.append(ref)
+                 if eventStatus == 1:
+                    if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
+                        correctSet.append(ref)                       
+                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
+                    if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0])) or (float(eventTime) < float(self.popSet[ref].eventInterval[0])):
+                        correctSet.append(ref)
 
             # Find the rule with highest accuracy, generality product
             highestValue = 0
@@ -218,8 +238,12 @@ class RuleCompaction:
             correctSet = []
 
         self.pop.popSet = retainedClassifiers
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------
     def approach_QRC(self,model):
+        """Called QCRA in the paper. It uses fitness to rank rules and guide covering. It's the same as Approach 15, but the code is re-written in 
+        order to speed up."""
         finalClassifiers = []
         if len(self.pop.popSet) == 0:  # Stop check
             keepGoing = False
@@ -253,17 +277,24 @@ class RuleCompaction:
                 keepGoing = False
 
         self.pop.popSet = finalClassifiers
-
+        
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------
     def approach_PDRC(self,model):
+        """ This approach is based on Dixon's approach, called UCRA in the paper. For each instance, form a match set and then a correct set. 
+        The most useful rule in the correct set is moved into the final ruleset. In this approach, the most useful rule has the largest 
+        product of accuracy, numerosity and generality.""" 
         retainedClassifiers = []
         matchSet = []
         correctSet = []
 
         model.env.resetDataRef()
         for j in range(model.env.formatData.numTrainInstances):
-            state_phenotype = model.env.getTrainInstance()
-            state = state_phenotype[0]
-            phenotype = state_phenotype[1]
+            state_event= model.env.getTrainInstance()
+            state = state_event[0]
+            eventTime = state_event[1]
+            eventStatus = state_event[2]
 
             # Create Match Set
             for i in range(len(self.pop.popSet)):
@@ -274,8 +305,12 @@ class RuleCompaction:
             # Create Correct Set
             for i in range(len(matchSet)):
                 ref = matchSet[i]
-                if self.pop.popSet[ref].phenotype == phenotype:
-                    correctSet.append(ref)
+                 if eventStatus == 1:
+                    if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
+                        correctSet.append(ref)                       
+                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
+                    if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0])) or (float(eventTime) < float(self.popSet[ref].eventInterval[0])):
+                        correctSet.append(ref)
 
             # Find the rule with highest accuracy, generality and numerosity product
             highestValue = 0
@@ -299,8 +334,13 @@ class RuleCompaction:
             correctSet = []
 
         self.pop.popSet = retainedClassifiers
-
+        
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------
     def approach_QRF(self):
+        """ An extremely fast rule compaction strategy. Removes any rule with an accuracy below 50% and any rule that covers only one instance, but specifies more than one attribute
+         (won't get rid of rare variant rules)"""
         retainedClassifiers = []
         for i in range(len(self.pop.popSet)):
             if self.pop.popSet[i].accuracy <= 0.5 or (self.pop.popSet[i].correctCover == 1 and len(self.pop.popSet[i].specifiedAttList) > 1):
@@ -308,10 +348,14 @@ class RuleCompaction:
             else:
                 retainedClassifiers.append(self.pop.popSet[i])
         self.pop.popSet = retainedClassifiers
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------
     def accuracySort(self, cl):
         return cl.accuracy
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------
     def numerositySort(self, cl):
         """ Sorts from smallest numerosity to largest """
         return cl.numerosity
