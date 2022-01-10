@@ -43,7 +43,7 @@ class StringEnumerator:
 #--------------------------------------------------------------------------------------------------------------------
 # print_invalid_attributes: prints invalid attributes - any attribute with a header name "NA"
 #--------------------------------------------------------------------------------------------------------------------       
-   def print_invalid_attributes(self):
+    def print_invalid_attributes(self):
         print("ALL INVALID ATTRIBUTES & THEIR DISTINCT VALUES")
         for attr in range(len(self.dataHeaders)):
             distinctValues = []
