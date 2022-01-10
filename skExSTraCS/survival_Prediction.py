@@ -91,14 +91,14 @@ class Prediction:
             cl = population.popSet[ref]
             if len(cl.coverTimes) > 0:
                 self.matchCoverTimes.append(cl.coverTimes)
-      empDist = np.asarray(sorted(matchCoverTimes)).reshape((len(matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
-      KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
-      KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
+        empDist = np.asarray(sorted(matchCoverTimes)).reshape((len(matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
+        KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
+        KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
       
-      self.times = np.asarray([time for time in range(0, eventList[1]+1)]).reshape((len(values), 1))
-      probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
-      self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
-      return self.survProbDist #is this needed?
+        self.times = np.asarray([time for time in range(0, eventList[1]+1)]).reshape((len(values), 1))
+        probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
+        self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
+      #  return self.survProbDist #is this needed?
 
       
       #1. get coverage from other matched instances. Is this stored anywhere already? If not need to make new function to store these. 
