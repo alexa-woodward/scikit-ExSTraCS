@@ -355,7 +355,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #                 self.fitness = pow(self.accuracy, model.nu) #- (self.phenotype[1]-self.phenotype[0])/cons.env.formatData.phenotypeRange)
                     
                                       
-     def updateFitness(self,model): 
+    def updateFitness(self,model): 
         if self.coverDiff > 0: 
             self.fitness = self.getParetoFitness([self.accuracyComponent,self.coverDiff])
 #Got rid of all the stuff here that was if: epochComplete = False
