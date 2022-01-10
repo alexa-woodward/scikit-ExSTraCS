@@ -24,7 +24,7 @@ class RuleCompaction:
 #
 #-----------------------------------------------------------------------------------------------------------------------------------------------
     def approach_Fu1(self,model):
-       """ This approach completely follows Fu's first approach. In the third stage, the number of instances a rule matched is used to rank 
+        """ This approach completely follows Fu's first approach. In the third stage, the number of instances a rule matched is used to rank 
         the rules and guide covering. Ranking list is updated each time some instances are covered and removed from the training set. """
     
         lastGood_popSet = sorted(self.pop.popSet, key=self.numerositySort)
@@ -209,10 +209,10 @@ class RuleCompaction:
             # Create CorrectSet
             for i in range(len(matchSet)):
                 ref = matchSet[i]
-                 if eventStatus == 1:
+                if eventStatus == 1:
                     if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
                         correctSet.append(ref)                       
-                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
+                else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
                     if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0])) or (float(eventTime) < float(self.popSet[ref].eventInterval[0])):
                         correctSet.append(ref)
 
@@ -305,10 +305,10 @@ class RuleCompaction:
             # Create Correct Set
             for i in range(len(matchSet)):
                 ref = matchSet[i]
-                 if eventStatus == 1:
+                if eventStatus == 1:
                     if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
                         correctSet.append(ref)                       
-                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
+                else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
                     if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0])) or (float(eventTime) < float(self.popSet[ref].eventInterval[0])):
                         correctSet.append(ref)
 
