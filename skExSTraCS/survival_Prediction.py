@@ -86,7 +86,7 @@ class Prediction:
 #----------------------------------------------------------------------------------------------------------------- 
 #need to figure out where this gets called 
 
-    def individualSurvivalProb(self,model,population,eventList)
+    def individualSurvivalProbDist(self,model,population,eventList)
         for ref in population.matchSet:
             cl = population.popSet[ref]
             if len(cl.coverTimes) > 0:
@@ -97,8 +97,8 @@ class Prediction:
       
       self.times = np.asarray([time for time in range(0, eventList[1]+1)]).reshape((len(values), 1))
       probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
-      self.survProb = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
-      return self.survProb #is this needed?
+      self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
+      return self.survProbDist #is this needed?
 
       
       #1. get coverage from other matched instances. Is this stored anywhere already? If not need to make new function to store these. 
@@ -137,8 +137,8 @@ class Prediction:
 #-----------------------------------------------------------------------------------------------------------------
 # getSurvProb: returns the survival distribution, NOT CALLED ANYWHERE YET - CHANGE THIS - to "PREDICT_PROBA" in survival_ExSTraCS.py
 #-----------------------------------------------------------------------------------------------------------------  
-    def getSurvProb(self):
-        return self.survProb
+    def getSurvProbDist(self):
+        return self.survProbDist
 
 #-----------------------------------------------------------------------------------------------------------------
 # plotSurvDist: NOT CALLED ANYWHERE YET
