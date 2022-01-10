@@ -80,7 +80,7 @@ class ClassifierSet:
     def makeCorrectSet(self,eventStatus,eventTime): #If the eventTime is within the rule eventInterval, append to the correct set.
         for i in range(len(self.matchSet)):
             ref = self.matchSet[i]
-            if eventStatus = 1:
+            if eventStatus == 1:
                 if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
                         self.correctSet.append(ref)
             else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
