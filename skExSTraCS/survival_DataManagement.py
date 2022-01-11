@@ -36,7 +36,8 @@ class DataManagement:
         
         ##NEW
         self.eventRanked = [list(i) for i in sorted(zip(dataEventTimes,dataEventStatus))]#used in setEventProb, the probability of the event occuring within a rule's event interval 
-
+        self.eventRanked = [x for x in self.eventRanked if not set(x).intersection([0])] #removed censored instances
+        
         # About Dataset
         self.numTrainInstances = dataFeatures.shape[0]  # The number of instances in the training data
         self.discriminateEventTimes(dataEventTimes)
