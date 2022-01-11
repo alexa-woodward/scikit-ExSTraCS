@@ -218,7 +218,7 @@ class DataManagement:
 # Function formatData:
 #---------------------------------------------------------------------------------------------------------------------------- 
     def formatData(self,dataFeatures,dataEventTimes, dataEventStatus, model):
-        formatted = np.insert(dataFeatures,self.numAttributes,dataEventTimes,dataEventStatus, 1) #Combines features and phenotypes into one array
+        formatted = np.insert(dataFeatures,self.numAttributes,[dataEventTimes,dataEventStatus], 1) #Combines features and phenotypes into one array
 
         self.shuffleOrder = np.random.choice(self.numTrainInstances,self.numTrainInstances,replace=False) #e.g. first element in this list is where the first element of the original list will go
         shuffled = []
