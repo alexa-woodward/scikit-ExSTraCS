@@ -11,7 +11,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.eventStatus = None
         self.eventTime = None    
         self.event_RP = None        #NEW - probability of this event time occurring by chance.
-    
+        self.eventInterval = None
+        
         self.fitness = model.init_fitness #cant remember what its set at 
         self.relativeIndFitness = None
         self.accuracy = 0.0
