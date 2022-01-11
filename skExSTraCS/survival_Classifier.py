@@ -122,8 +122,10 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 if eventStatus == 1:
                     if float(eventTime) <= float(self.eventInterval[1]) and float(eventTime) >= float(self.eventInterval[0]):
                         correct_count += 1
+                        self.updateCorrect()
                         self.updateError(model,eventTime,eventStatus)
                         self.updateCorrectTimes(eventTime) #appends the eventTime to a list of "correctTimes" for each correctly matched training instance
+                        self.updateCorrectCoverage()
                     else: 
                         self.updateIncorrectError()
                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
