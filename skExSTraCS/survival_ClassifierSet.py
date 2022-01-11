@@ -58,7 +58,7 @@ class ClassifierSet:
             oldCl.updateNumerosity(1)
             self.microPopSize += 1
         else:
-            cl.evaluateAccuracyAndInitialFitness(model,self.nextID,eventTime,eventStatus) #this nextID thing might be an issue 
+            cl.evaluateAccuracyAndInitialFitness(model,self.nextID) #this nextID thing might be an issue 
             self.popSet[self.nextID] = cl
             self.nextID += 1
             self.microPopSize += 1
