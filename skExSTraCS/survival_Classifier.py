@@ -97,7 +97,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         else: #if the instance was censored
             eventRange = model.env.formatData.eventList[1] - model.env.formatData.eventList[0] #again, this should be the same at Tmax
             rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
-            adjEvent = random.randint(eventTime, model.env.formatData.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
+            adjEvent = random.randrange(eventTime, model.env.formatData.eventList[1]+1,1) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
             Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time 
             High = float(adjEvent) + rangeRadius
             self.eventInterval = [Low,High]
