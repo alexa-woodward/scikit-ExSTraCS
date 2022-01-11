@@ -455,7 +455,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             self.timer.stopTimeEvaluation()
 
         #Make [C]
-        self.population.makeCorrectSet(state_event[1])
+        self.population.makeCorrectSet(state_event[2],state_event[1])
 
         #Update Parameters
         self.population.updateSets(self)
