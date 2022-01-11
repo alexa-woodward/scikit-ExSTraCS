@@ -238,6 +238,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.nu = nu
         self.chi = chi
         self.mu = mu
+        self.upsilon = upsilon
         self.theta_GA = theta_GA
         self.theta_del = theta_del
         self.theta_sub = theta_sub
