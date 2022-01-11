@@ -17,7 +17,7 @@ import pickle
 import random
 
 class ExSTraCS(BaseEstimator,ClassifierMixin):
-    def __init__(self,learning_iterations=100000,N=1000,nu=1,chi=0.8,mu=0.04,theta_GA=25,theta_del=20,theta_sub=20,
+    def __init__(self,learning_iterations=100000,N=1000,nu=1,chi=0.8,mu=0.04,upsilon=0.04,theta_GA=25,theta_del=20,theta_sub=20,
                  acc_sub=0.99,beta=0.2,delta=0.1,init_fitness=0.01,fitness_reduction=0.1,theta_sel=0.5,rule_specificity_limit=None,
                  do_correct_set_subsumption=False,do_GA_subsumption=True,selection_method='tournament',do_attribute_tracking=True,
                  do_attribute_feedback=True,attribute_tracking_method='add',attribute_tracking_beta = 0.1,expert_knowledge=None,
