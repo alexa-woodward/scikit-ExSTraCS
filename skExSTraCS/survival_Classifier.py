@@ -88,7 +88,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 
 ### Creating a continuous event range (endpoint):           
         if self.eventStatus == 1: #if the event occured
-            eventRange = self.eventList[1] - self.eventList[0] #basically this should be equal Tmax 
+            eventRange = model.env.formatData.eventList[1] - model.env.formatData.eventList[0] #basically this should be equal Tmax 
             rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius.
             Low = float(eventTime) - rangeRadius
             High = float(eventTime) + rangeRadius
