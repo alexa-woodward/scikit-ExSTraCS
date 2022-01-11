@@ -1,4 +1,4 @@
-from skExSTraCS.DataManagement import DataManagement
+from skExSTraCS.survival_DataManagement import DataManagement
 
 class OfflineEnvironment:
     def __init__(self,dataFeatures,dataEventTimes,dataEventStatus,model):
