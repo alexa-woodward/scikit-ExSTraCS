@@ -113,19 +113,20 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 
         for instance_index in range(num_instances): #for each instance in the environment 
             state = training_data[0][instance_index]
-            condition = training_data[1][instance_index]
+            eventTime = training_data[1][instance_index]
+            eventStatus = training_data[2][instance_index]
             if self.match(model, state): #apply match function 
                 match_count += 1 #call updateExperience?
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
                 if eventStatus == 1:
-                    if float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0]):
+                    if float(eventTime) <= float(self.eventInterval[1]) and float(eventTime) >= float(self.eventInterval[0]):
                         correct_count += 1
                         self.updateError(eventTime,eventStatus)
                         self.updateCorrectTimes(eventTime) #appends the eventTime to a list of "correctTimes" for each correctly matched training instance
                     else: 
                         self.updateIncorrectError()
                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
-                    if (float(eventTime) <= float(self.popSet[ref].eventInterval[1]) and float(eventTime) >= float(self.popSet[ref].eventInterval[0])) or (float(eventTime) < float(self.popSet[ref].eventInterval[0])):
+                    if (float(eventTime) <= float(self.eventInterval[1]) and float(eventTime) >= float(self.eventInterval[0])) or (float(eventTime) < float(self.eventInterval[0])):
                         correct_count += 1
                         self.updateError(eventTime,eventStatus)
                     else:    
