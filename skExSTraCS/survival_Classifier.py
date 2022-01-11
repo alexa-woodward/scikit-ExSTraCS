@@ -46,7 +46,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     def initializeByCopy(self,toCopy,iterationCount): #idk what this means 
         self.specifiedAttList = copy.deepcopy(toCopy.specifiedAttList)
         self.condition = copy.deepcopy(toCopy.condition)
-        self.phenotype = copy.deepcopy(toCopy.phenotype)
+        self.eventTime = copy.deepcopy(toCopy.eventTime)
+        self.eventStatus = copy.deepcopy(toCopy.eventStatus)
         self.timeStampGA = iterationCount
         self.initTimeStamp = iterationCount
         self.aveMatchSetSize = copy.deepcopy(toCopy.aveMatchSetSize)
