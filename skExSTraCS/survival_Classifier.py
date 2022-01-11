@@ -102,6 +102,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time 
             High = float(adjEvent) + rangeRadius
             self.eventInterval = [Low,High]
+            #self.setEventProb(???) Need this, otherwise "event_RP" stays as "None" which will throw an error. maybe set "event_RP" to something ?? when eventStatus == 0 
 
 #--------------------------------------------------------------------------------------------- 
 # evaluateAccuracyAndInitialFitness: going to need to add the updateFront function in here I think
