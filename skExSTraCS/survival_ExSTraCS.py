@@ -458,7 +458,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.population.makeCorrectSet(state_event[2],state_event[1])
 
         #Update Parameters
-        self.population.updateSets(state_event[1],state_event[2])
+        self.population.updateSets(self,state_event[1],state_event[2])
 
         #[C] Subsumption
         if self.do_correct_set_subsumption:
