@@ -95,9 +95,9 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             self.eventInterval = [Low,High]  
             self.setEventProb(model,model.env.formatData.eventRanked) #this might need to have eventStatus as a parameter...see 
         else: #if the instance was censored
-            eventRange = self.eventList[1] - self.eventList[0] #again, this should be the same at Tmax
+            eventRange = model.env.formatData.eventList[1] - model.env.formatData.eventList[0] #again, this should be the same at Tmax
             rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
-            adjEvent = random.randint(eventTime, self.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
+            adjEvent = random.randint(eventTime, model.env.formatData.eventList[1]) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
             Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time 
             High = float(adjEvent) + rangeRadius
             self.eventInterval = [Low,High]
@@ -276,14 +276,14 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         if eventStatus == 1:
             high = self.eventInterval[1]
             low = self.eventInterval[0]
-            if self.eventInterval[1] > self.eventList[1]:
-                high = self.eventList[1]
-            if self.eventInterval[0] < self.eventList[0]:
-                low = self.eventList[0]
+            if self.eventInterval[1] > model.env.formatData.eventList[1]:
+                high = model.env.formatData.eventList[1]
+            if self.eventInterval[0] < model.env.formatData.eventList[0]:
+                low = model.env.formatData.eventList[0]
                 
             rangeCentroid = (high + low) / 2.0
             error = abs(rangeCentroid - eventTime)  #this or self.eventTime?
-            adjustedError = error / (self.eventList[1] - self.eventList[0]) #Error is fraction of total phenotype range (i.e. maximum possible error)
+            adjustedError = error / (model.env.formatData.eventList[1] - model.env.formatData.eventList[0]) #Error is fraction of total phenotype range (i.e. maximum possible error)
         else: #if the eventStatus is 0 (censored instance)
             adjustedError = 0 #do not update the error, i.e., adjusted error for this instance is 0
         self.errorSum += adjustedError  
