@@ -17,6 +17,7 @@ class ClassifierSet:
     def makeMatchSet(self,model,state_event): 
         state = state_event[0]
         eventTime = state_event[1]
+        eventStatus = state_event[2]
         doCovering = True
         setNumerositySum = 0
 
