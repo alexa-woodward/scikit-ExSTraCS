@@ -613,7 +613,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #----------------------------------------------------------------------------------------------------------------------------
 # mutation:  Mutates the condition of the classifier. Also handles phenotype mutation. This is a niche mutation, which means that the resulting classifier will still match the current instance. 
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def mutation(self,model,state):
+    def mutation(self,model,state,eventTime):
         """ Mutates the condition of the classifier. Also handles phenotype mutation. This is a niche mutation, which means that the resulting classifier will still match the current instance.  """
         pressureProb = 0.5  # Probability that if EK is activated, it will be applied.
         useAT = model.do_attribute_feedback and random.random() < model.AT.percent
@@ -722,7 +722,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         #-------------------------------------------------------
         # MUTATE PHENOTYPE
         #-------------------------------------------------------
-        nowChanged = self.continuousEventMutation(eventTime) #NOTE: Must mutate to still include true current value.
+        nowChanged = self.continuousEventMutation(model,eventTime) #NOTE: Must mutate to still include true current value.
         if changed:# or nowChanged:
             return True
 
@@ -731,12 +731,12 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 # continuousEventMutation: Mutate this rule's continuous phenotype
 #----------------------------------------------------------------------------------------------------------------------------     
     
-    def continuousEventMutation(self, eventTime):
+    def continuousEventMutation(self, model, eventTime):
         """ Mutate this rule's continuous eventTime. """
         #Continuous Phenotype Crossover------------------------------------
         changed = False
-        if random.random() < cons.upsilon: #Mutate continuous phenotype
-            eventRange = self.eventInterval[1] - self.phenotype[0]
+        if random.random() < model.upsilon: #Mutate continuous phenotype
+            eventRange = self.eventInterval[1] - self.eventInterval[0]
             mutateRange = random.random()*0.5*eventRange
             tempKey = random.randint(0,2) #Make random choice between 3 scenarios, mutate minimums, mutate maximums, mutate both
             if tempKey == 0: #Mutate minimum 
