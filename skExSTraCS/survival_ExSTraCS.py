@@ -91,7 +91,14 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
 
         if mu < 0 or mu > 1:
             raise Exception("mu param must be float from 0 - 1")
+            
+        #upsilon
+        if not self.checkIsFloat(upsilon):
+            raise Exception("mu param must be float from 0 - 1")
 
+        if upsilon < 0 or upsilon > 1:
+            raise Exception("upsilon param must be float from 0 - 1")
+            
         #theta_GA
         if not self.checkIsFloat(theta_GA):
             raise Exception("theta_GA param must be nonnegative float")
