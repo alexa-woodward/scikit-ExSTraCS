@@ -217,8 +217,8 @@ class DataManagement:
 #----------------------------------------------------------------------------------------------------------------------------
 # Function formatData:
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def formatData(self,dataFeatures,dataEventTimes, dataEventStatus, model):
-        formatted = np.insert(dataFeatures,self.numAttributes,[dataEventTimes,dataEventStatus], 1) #Combines features and phenotypes into one array
+    def formatData(self,dataFeatures,dataEventTimes,dataEventStatus,model):
+        formatted = np.insert(dataFeatures,self.numAttributes,[dataEventTimes,dataEventStatus], axis = 1) #Combines features and phenotypes into one array
 
         self.shuffleOrder = np.random.choice(self.numTrainInstances,self.numTrainInstances,replace=False) #e.g. first element in this list is where the first element of the original list will go
         shuffled = []
@@ -229,14 +229,16 @@ class DataManagement:
         formatted = np.array(shuffled)
 
         shuffledFeatures = formatted[:,:-1].tolist()
-        shuffledLabels = formatted[:,self.numAttributes].tolist() #might need to update this, because now the labels are two values 
+        shuffledTimes = formatted[:,self.numAttributes].tolist()
+        shuffledStatus = formatted[:,self.numAttributes + 1].tolist()
+        #might need to update this, because now the labels are two values 
         for i in range(len(shuffledFeatures)):
             for j in range(len(shuffledFeatures[i])):
                 if np.isnan(shuffledFeatures[i][j]):
                     shuffledFeatures[i][j] = None
-            if np.isnan(shuffledLabels[i]):
-                shuffledLabels[i] = None
-        return [shuffledFeatures,shuffledLabels]
+            if np.isnan(shuffledTimes[i]):
+                shuffledTimes[i] = None
+        return [shuffledFeatures,shuffledTimes,shuffledStatus]
 
 
 class AttributeInfoDiscreteElement():
