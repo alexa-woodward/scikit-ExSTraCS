@@ -360,9 +360,21 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                     
                                       
     def updateFitness(self,model): 
+        #ruleAge = exploreIter - self.initTimeStamp+1 #Correct, because we include the current instance we are on.
+        #self.coverDiff = self.coverDiff*cons.env.formatData.numTrainInstances/float(ruleAge)
+        objectivePair = [self.accuracyComponent,self.coverDiff]
         if self.coverDiff > 0: 
-            self.fitness = model.env.formatData.ecFront.getParetoFitness([self.accuracyComponent,self.coverDiff])
-#Got rid of all the stuff here that was if: epochComplete = False
+            if len(model.env.formatData.ecFront.paretoFrontAcc) == 0: #Nothing stored yet on incomplete epoch front
+                    #Temporarily use accuracy as fitness in this very early stage.
+                    print('nothing stored on pareto front')
+                    self.fitness = self.accuracyComponent
+                    model.env.formatData.ecFront.updateFront(objectivePair)
+                #PARETO FRONTS ONLINE
+            else:  #Some pareto front established.
+                if len(model.env.formatData.ecFront.paretoFrontAcc) > 0: #Leave epoch incomplete front behind.
+                    self.fitness = model.env.formatData.ecFront.getParetoFitness(objectivePair)
+                    print('front established, now getting pareto fitness')
+                    #probably should updateFront again, but where??    
         else: #if coverDiff is not greater than 0, set fitness to a really small number
 #             print 'poor'
 #             print self.accuracyComponent
