@@ -11,7 +11,7 @@ class OfflineEnvironment:
         self.currentTrainStatus = self.formatData.trainFormatted[2][self.dataRef]
 
     def getTrainInstance(self):
-        return (self.currentTrainState,self.currentTrainEvent)
+        return (self.currentTrainState,self.currentTrainEvent,self.currentTrainStatus)
 
     def newInstance(self):
         if self.dataRef < self.formatData.numTrainInstances-1:
