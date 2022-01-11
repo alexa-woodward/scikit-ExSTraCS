@@ -100,6 +100,7 @@ class ClassifierSet:
             self.popSet[ref].updateMatchSetSize(model,matchSetNumerosity)  # Moved to match set to be like GHCS
             if ref in self.correctSet: #if the rule is in the correct set, update the correctCoverage. NOTE error and accuracy ARENT updated here, because the rules should have already seen all the instances (in evaluateAccuracyandInitialFitness)
                self.popSet[ref].updateCorrect()  
+            #self.popSet[ref].updateCorrectCoverage() should this be called here or elsewhere?
             self.popSet[ref].updateFitness(model) #update fitness
             
 #--------------------------------------------------------------------------------------------------------------------
