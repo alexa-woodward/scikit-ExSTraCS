@@ -121,14 +121,14 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                 if eventStatus == 1:
                     if float(eventTime) <= float(self.eventInterval[1]) and float(eventTime) >= float(self.eventInterval[0]):
                         correct_count += 1
-                        self.updateError(eventTime,eventStatus)
+                        self.updateError(model,eventTime,eventStatus)
                         self.updateCorrectTimes(eventTime) #appends the eventTime to a list of "correctTimes" for each correctly matched training instance
                     else: 
                         self.updateIncorrectError()
                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
                     if (float(eventTime) <= float(self.eventInterval[1]) and float(eventTime) >= float(self.eventInterval[0])) or (float(eventTime) < float(self.eventInterval[0])):
                         correct_count += 1
-                        self.updateError(eventTime,eventStatus)
+                        self.updateError(model,eventTime,eventStatus)
                     else:    
                         self.updateIncorrectError()
         try:
@@ -272,7 +272,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #----------------------------------------------------------------------------------------------------------------------------
 # updateError: updates the error for a classifier until all instances have been seen
 #----------------------------------------------------------------------------------------------------------------------------             
-    def updateError(self,eventTime,eventStatus):
+    def updateError(self,model,eventTime,eventStatus):
 #        if not self.epochComplete: Removed this 
         if eventStatus == 1:
             high = self.eventInterval[1]
