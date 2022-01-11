@@ -105,7 +105,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #--------------------------------------------------------------------------------------------- 
 # evaluateAccuracyAndInitialFitness: going to need to add the updateFront function in here I think
 #---------------------------------------------------------------------------------------------                                                 
-    def evaluateAccuracyAndInitialFitness(self,model,nextID, eventTime, eventStatus): #need to add event status here too #This method should only be called once it is CERTAIN a classifier will be added to the population.
+    def evaluateAccuracyAndInitialFitness(self,model,nextID): #need to add event status here too #This method should only be called once it is CERTAIN a classifier will be added to the population.
         training_data = model.env.formatData.trainFormatted
         num_instances = model.env.formatData.numTrainInstances
         match_count = 0
