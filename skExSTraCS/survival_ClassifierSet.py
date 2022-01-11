@@ -37,7 +37,7 @@ class ClassifierSet:
         model.timer.startTimeCovering()
         while doCovering: #if covering is still true...
             newCl = Classifier(model) #create a new classifier (call from survival_classifier.py script, runs the whole thing...which includes the "evaluateAccuracyandInitalFitness" function, called below before the classifier is added to popSet)
-            newCl.initializeByCovering(model,setNumerositySum+1,state,eventTime)
+            newCl.initializeByCovering(model,setNumerositySum+1,state,eventTime,eventStatus)
             if len(newCl.specifiedAttList) > 0: #ADDED CHECK TO PREVENT FULLY GENERALIZED RULES
                 self.addClassifierToPopulation(model,newCl,True)
                 self.matchSet.append(len(self.popSet)-1)
