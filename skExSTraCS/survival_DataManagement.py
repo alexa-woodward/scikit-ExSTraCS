@@ -41,6 +41,7 @@ class DataManagement:
         self.numTrainInstances = dataFeatures.shape[0]  # The number of instances in the training data
         self.discriminateEventTimes(dataEventTimes)
         self.discriminateEventStatus(dataEventStatus)
+        self.characterizeEventTimes(dataEventTimes,model)
 
         self.discriminateAttributes(dataFeatures, model)
         self.characterizeAttributes(dataFeatures, model)
