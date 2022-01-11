@@ -224,8 +224,8 @@ class ClassifierSet:
         #-------------------------------------------------------
         # Event range probability correction
         #-------------------------------------------------------                                                                                                                                                                                                                                                                                           
-        cl1.setEventProb()
-        cl2.setEventProb()                                                                                                                                              
+        cl1.setEventProb(model,model.env.formatData.eventRanked)
+        cl2.setEventProb(model,model.env.formatData.eventRanked)                                                                                                                                              
 
         if changed or nowchanged or howaboutnow:
             if nowchanged:
