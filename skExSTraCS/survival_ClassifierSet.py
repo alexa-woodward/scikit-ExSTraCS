@@ -59,10 +59,10 @@ class ClassifierSet:
             self.microPopSize += 1
         else:
             cl.evaluateAccuracyAndInitialFitness(model,self.nextID) #this nextID thing might be an issue 
-            self.popSet[self.nextID] = cl
+            self.popSet.append(cl)
+            #self.popSet[self.nextID] = cl #this one wasnt working
             self.nextID += 1
             self.microPopSize += 1
-            #self.popSet.append(cl) old, new @ line #60 above, to include param "nextID"
             self.microPopSize += 1
         model.timer.stopTimeAdd()
         
