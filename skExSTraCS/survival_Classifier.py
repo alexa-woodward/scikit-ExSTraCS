@@ -14,7 +14,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     
         self.fitness = model.init_fitness #cant remember what its set at 
         self.relativeIndFitness = None
-        self.accuracy = 0
+        self.accuracy = 0.0
+        self.accuracyComponent = 0.0
         self.numerosity = 1
         self.coverDiff = 1 #Number of instances correctly covered by rule beyond what would be expected by chance.
         self.aveMatchSetSize = None
@@ -358,7 +359,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                                       
     def updateFitness(self,model): 
         if self.coverDiff > 0: 
-            self.fitness = self.getParetoFitness([self.accuracyComponent,self.coverDiff])
+            self.fitness = model.env.formatData.ecFront.getParetoFitness([self.accuracyComponent,self.coverDiff])
 #Got rid of all the stuff here that was if: epochComplete = False
         else: #if coverDiff is not greater than 0, set fitness to a really small number
 #             print 'poor'
