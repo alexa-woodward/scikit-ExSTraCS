@@ -49,6 +49,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.condition = copy.deepcopy(toCopy.condition)
         self.eventTime = copy.deepcopy(toCopy.eventTime)
         self.eventStatus = copy.deepcopy(toCopy.eventStatus)
+        self.eventInterval = copy.deepcopy(toCopy.eventInterval)
         self.timeStampGA = iterationCount
         self.initTimeStamp = iterationCount
         self.aveMatchSetSize = copy.deepcopy(toCopy.aveMatchSetSize)
