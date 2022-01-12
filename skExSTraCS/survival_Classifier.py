@@ -456,7 +456,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 #----------------------------------------------------------------------------------------------------------------------------
 # uniformCrossover: Started updating 11/29. see code_notes for questions. calls "eventCrossover" below, 50% of the time 
 #---------------------------------------------------------------------------------------------------------------------------- 
-    def uniformCrossover(self,model,cl): 
+    def uniformCrossover(self,model,cl,eventTime): 
         if random.random() < 0.5: #50% of the time crossover the condition, 50% crossover the eventrange 
             p_self_specifiedAttList = copy.deepcopy(self.specifiedAttList) #A deep copy constructs a new compound object and then, recursively, inserts copies into it of the objects found in the original.
             p_cl_specifiedAttList = copy.deepcopy(cl.specifiedAttList) #deep copy the attribute list of two parent rules 
