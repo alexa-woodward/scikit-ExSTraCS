@@ -103,13 +103,11 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             self.eventInterval = [Low,High]  
             self.setEventProb(model,model.env.formatData.eventRanked) 
         else: #if the instance was censored
+            rangeRadius = random.randint(25,75)*0.005*eventRange / 2.0
             if eventTime >= (model.env.formatData.eventList[1] - int(rangeRadius)): #temporary workaround for a range error (eventtime for censored instances is greater than the maxTime - rangeRadius).
                 pass
             else:
                 eventRange = model.env.formatData.eventList[1] - model.env.formatData.eventList[0] #again, this should be the same at Tmax
-                rangeRadius = random.randint(25,75)*0.005*eventRange / 2.0 #Continuous initialization domain radius, same as above
-                #print("rangeRadius: ",rangeRadius,"eventTime: ", self.eventTime)
-
                 adjEvent = random.randrange(eventTime, model.env.formatData.eventList[1] - int(rangeRadius),1) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax minus the range radius (that way it doesnt go over), form the range around that
                 Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time
                 High = float(adjEvent) + rangeRadius
