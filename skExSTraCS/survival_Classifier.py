@@ -423,7 +423,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
     def subsumes(self,model,cl):
         #FOR SURVIVAL DATA
         if self.eventInterval[0] >= cl.eventInterval[0] and self.eventInterval[1] <= cl.eventInterval[1]:
-                if self.isSubsumer() and self.isMoreGeneral(cl):
+                if self.isSubsumer(model) and self.isMoreGeneral(cl):
                     return True
         return False
 #----------------------------------------------------------------------------------------------------------------------------
