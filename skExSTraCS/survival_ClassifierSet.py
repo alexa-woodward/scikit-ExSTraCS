@@ -197,7 +197,7 @@ class ClassifierSet:
         #-----------------------------------------------------
         if not cl1.equals(cl2) and random.random() < model.chi:
             model.timer.startTimeCrossover()
-            changed = cl1.uniformCrossover(model,cl2)
+            changed = cl1.uniformCrossover(model,cl2,eventTime)
             model.timer.stopTimeCrossover()
 
         if changed:
