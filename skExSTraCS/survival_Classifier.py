@@ -92,19 +92,26 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
 ### Creating a continuous event range (endpoint):           
         if self.eventStatus == 1: #if the event occured
             eventRange = model.env.formatData.eventList[1] - model.env.formatData.eventList[0] #basically this should be equal Tmax 
-            rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius.
+            rangeRadius = random.randint(25,75)*0.005*eventRange / 2.0 #Continuous initialization domain radius.
             Low = float(eventTime) - rangeRadius
+            if Low < model.env.formatData.eventList[0]:
+                Low = 0
             High = float(eventTime) + rangeRadius
+            if High > model.env.formatData.eventList[1]:
+                High = model.env.formatData.eventList[1]   
             self.eventInterval = [Low,High]  
-            self.setEventProb(model,model.env.formatData.eventRanked) #this might need to have eventStatus as a parameter...see 
+            self.setEventProb(model,model.env.formatData.eventRanked) 
         else: #if the instance was censored
             eventRange = model.env.formatData.eventList[1] - model.env.formatData.eventList[0] #again, this should be the same at Tmax
-            rangeRadius = random.randint(25,75)*0.01*eventRange / 2.0 #Continuous initialization domain radius, same as above
-            adjEvent = random.randrange(eventTime, model.env.formatData.eventList[1]+1,1) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax, form the range around that
+            rangeRadius = random.randint(25,75)*0.005*eventRange / 2.0 #Continuous initialization domain radius, same as above
+            #print("rangeRadius: ",rangeRadius,"eventTime: ", self.eventTime)
+            
+            adjEvent = random.randrange(eventTime, model.env.formatData.eventList[1] - int(rangeRadius),1) #create an adjusted event time - randomly choose a value greater than the censoring time and below Tmax minus the range radius (that way it doesnt go over), form the range around that
             Low = float(adjEvent) - rangeRadius #build the range around the new adjusted event time 
             High = float(adjEvent) + rangeRadius
             self.eventInterval = [Low,High]
-            #self.setEventProb(???) Need this, otherwise "event_RP" stays as "None" which will throw an error. maybe set "event_RP" to something ?? when eventStatus == 0 
+            self.setEventProb(model, model.env.formatData.eventRanked) # Need this, otherwise "event_RP" stays as "None" which will throw an error. maybe set "event_RP" to something ?? when eventStatus == 0 
+        #print("eventInterval: ", self.eventInterval)
 
 #--------------------------------------------------------------------------------------------- 
 # evaluateAccuracyAndInitialFitness: going to need to add the updateFront function in here I think
