@@ -457,12 +457,12 @@ class ClassifierSet:
         for cl in self.popSet:
             high = cl.eventInterval[1]
             low = cl.eventInterval[0]
-            if high > cons.env.formatData.eventList[1]:
-                high = cons.env.formatData.eventList[1]
-            if low < cons.env.formatData.eventList[0]:
-                low = cons.env.formatData.eventList[0]
+            if high > model.env.formatData.eventList[1]:
+                high = model.env.formatData.eventList[1]
+            if low < model.env.formatData.eventList[0]:
+                low = model.env.formatData.eventList[0]
                 sumRuleRange += (cl.eventInterval[1] - cl.eventInterval[0])*cl.numerosity
-        eventRange = cons.env.formatData.eventList[1] - cons.env.formatData.eventList[0]
+        eventRange = model.env.formatData.eventList[1] - model.env.formatData.eventList[0]
         self.aveEventRange = (sumRuleRange / float(self.microPopSize)) / float(eventRange)       
         return aveGenerality
         
