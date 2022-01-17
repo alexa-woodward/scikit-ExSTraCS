@@ -63,7 +63,6 @@ class ClassifierSet:
             #self.popSet[self.nextID] = cl #this one wasnt working
             self.nextID += 1
             self.microPopSize += 1
-            self.microPopSize += 1
         model.timer.stopTimeAdd()
         
 #--------------------------------------------------------------------------------------------------------------------
