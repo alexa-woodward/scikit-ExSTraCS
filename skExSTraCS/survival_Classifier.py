@@ -151,7 +151,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         try:
             self.accuracy = updateAccuracy(model) #updateError has now been called above
         except:
-            self.accuracy = (correct_count / match_count)   #keeping this here just in case      
+            self.accuracy = (correct_count / match_count)   #keeping this here just in case, shoudl it be instead? self.accuracy = 1 - (self.errorSum/self.matchCover)     
 #        self.ID = nextID #I dont think we need this
         self.updateFitness(model) #this calls the pareto fitness function  
         self.epochComplete = True #set epochComplete (For this rule) equal to TRUE..later could remove all references to epochComplete
