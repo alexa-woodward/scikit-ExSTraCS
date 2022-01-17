@@ -131,7 +131,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             eventTime = training_data[1][instance_index]
             eventStatus = training_data[2][instance_index]
             if self.match(model, state): #apply match function 
-                match_count += 1 #call updateExperience?
+                match_count += 1
+                self.updateExperience()
                 model.env.formatData.matchKey[instance_index].append(nextID) #Add that this rule matches with this training instance
                 if eventStatus == 1:
                     if float(eventTime) <= float(self.eventInterval[1]) and float(eventTime) >= float(self.eventInterval[0]): #this sometimes throws a "nonetype is not subscriptable error"
