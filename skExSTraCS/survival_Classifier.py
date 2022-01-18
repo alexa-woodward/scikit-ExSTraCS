@@ -346,7 +346,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         #-----------------------------------------------------------------------------------
         if self.accuracy > self.event_RP: #if the accuracy is greater than the probability that the event time will fall in the event range of the rule
             adjAccuracy = self.accuracy - self.event_RP #adjust the accuracy by subtracting that probability 
-        elif self.matchCover == 2 and self.correctCover == 1 and not self.epochComplete and (model.interationCount - self.timeStampGA) < coverOpportunity: #else, if the rule has matched two instances but only been correct once, and the rules is NOT epoch complete and the difference between the number of iterations and the time stamp is less than 1000, 
+        elif self.matchCover == 2 and self.correctCover == 1 and not self.epochComplete and (model.iterationCount - self.timeStampGA) < coverOpportunity: #else, if the rule has matched two instances but only been correct once, and the rules is NOT epoch complete and the difference between the number of iterations and the time stamp is less than 1000, 
             adjAccuracy = self.event_RP / 2.0 #set the accuracy to HALF the probability
         else:
             adjAccuracy = self.accuracy * nonUsefulDiscount #?? #else, multiple the accuracy by the nonUsefulDiscount (1/cover opportunity ) 
