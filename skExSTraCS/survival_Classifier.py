@@ -360,6 +360,8 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             self.accuracyComponent = adjAccuracy / float(maxAccuracy) #Accuracy contribution scaled between 0 and 1 allowing for different maximum accuracies
         self.accuracyComponent = 2*((1/float(1+math.exp(-5*self.accuracyComponent)))-0.5)/float(0.98661429815) #what is all this
         self.accuracyComponent = math.pow(self.accuracyComponent,1)
+        return self.accuracyComponent 
+     
         
 #----------------------------------------------------------------------------------------------------------------------------
 # updateFitness: Calculates the fitness of an individual rule based on it's accuracy and correct coverage relative to the 'Pareto' front
