@@ -32,10 +32,11 @@ from sklearn.neighbors import KernelDensity
 #------------------------------------------------------
 
 class Prediction:
-    def __init__(self, population,eventList):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
+    def __init__(self,model,population):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
         """ Constructs the voting array and determines the prediction decision. """
         self.decision = None
         self.survProb = None
+        self.survProbDist = None
         self.times = None
         self.matchCoverTimes = [] #create an empty list to append coverTimes from the matchset rules
         
@@ -86,16 +87,16 @@ class Prediction:
 #----------------------------------------------------------------------------------------------------------------- 
 #need to figure out where this gets called 
 
-    def individualSurvivalProbDist(self,model,population,eventList):
+    def individualSurvivalProbDist(self,model,population):
         for ref in population.matchSet:
             cl = population.popSet[ref]
             if len(cl.coverTimes) > 0:
                 self.matchCoverTimes.append(cl.coverTimes)
-        empDist = np.asarray(sorted(matchCoverTimes)).reshape((len(matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
+        empDist = np.asarray(sorted(self.matchCoverTimes)).reshape((len(self.matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
         KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
         KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
       
-        self.times = np.asarray([time for time in range(0, eventList[1]+1)]).reshape((len(values), 1))
+        self.times = np.asarray([time for time in range(0, model.env.formatData.eventList[1]+1)]).reshape((len(values), 1))
         probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
         self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
       #  return self.survProbDist #is this needed?
