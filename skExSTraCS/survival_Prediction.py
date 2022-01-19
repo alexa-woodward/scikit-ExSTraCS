@@ -89,52 +89,27 @@ class Prediction:
 #need to figure out where this gets called 
 
     def individualSurvivalProbDist(self,model,population):
-        for ref in population.matchSet:
-            cl = population.popSet[ref]
-            if len(cl.coverTimes) > 0:
-                self.matchCoverTimes.append(cl.coverTimes)
-        empDist = np.asarray(sorted(self.matchCoverTimes)).reshape((len(self.matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
-        KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
-        KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
-      
-        self.times = np.asarray([time for time in range(0, model.env.formatData.eventList[1]+1)]).reshape((len(values), 1))
-        probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
-        self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
-      #  return self.survProbDist #is this needed?
-      
-      #----------------------------------------
-      # EDITS FROM 1/18, need to fix
-      #----------------------------------------
+        if len(population.matchSet) > 0:
+            for ref in population.matchSet:
+                cl = population.popSet[ref] 
+                if len(cl.coverTimes) > 0: #okay but what IF this is 0?
+                    self.matchCoverTimes.append(cl.coverTimes) #idk why it is nesting the list [[xxxxxxx]]
+            self.matchCoverTimes = list(itertools.chain(*self.matchCoverTimes))
+            values = np.asarray([value for value in range(1,int(model.env.formatData.eventList[1]+1))])
+            empDist = np.asarray(sorted(self.matchCoverTimes), dtype=object).reshape((len(self.matchCoverTimes), 1)) #sort the correct times, set as the empricial distributi
+            KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
+            KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
+            self.times = np.asarray([time for time in range(0, int(model.env.formatData.eventList[1]))]).reshape((len(values), 1))
+            probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
+            self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
+            print("predicted inidividual survival dist: ",self.survProbDist)
 
-      def individualSurvivalProbDist(self,model,population):
-        for ref in population.matchSet:
-            cl = population.popSet[ref]
-            print("classifier; ", cl)
-            if len(cl.coverTimes) > 0: #okay but what IF this is 0?
-                self.matchCoverTimes.append(cl.coverTimes)
-            #else: ??    
-         #idk why it is nesting the list [[xxxxxxx]]
-        print("length of matchCoverTiimes: ",len(self.matchCoverTimes))
-        print("matchCoverTimes: ", self.matchCoverTimes)
-        self.matchCoverTimes = self.matchCoverTimes[0]
-        print(type(self.matchCoverTimes))
-        values = np.asarray([value for value in range(1,int(model.env.formatData.eventList[1]+1))])
-        print("values: ", values)
- #       empDist = self.matchCoverTimes.reshape(len(self.matchCoverTimes), 1)
-        empDist = np.asarray(sorted(self.matchCoverTimes), dtype=object).reshape((len(self.matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
-        print("Empirical distributuion: ", empDist)
-        KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
-        KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
-      
-        self.times = np.asarray([time for time in range(0, int(model.env.formatData.eventList[1]))]).reshape((len(values), 1))
-        probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
-        self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
-        print("predicted individual surv probabilities: ",self.survProbDist)
-        return self.survProbDist 
-      
+        else: print("No matching rules exist, cannot predict survival distribution") 
+          
       #1. get coverage from other matched instances. Is this stored anywhere already? If not need to make new function to store these. 
       #2. Use KDE to estimate the PDF
       #3. Use: survival = 1 - np.cumsum(probabilities) to retrieve the survival probabilities
+
 
 
 #-----------------------------------------------------------------------------------------------------------------
