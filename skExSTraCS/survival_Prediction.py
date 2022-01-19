@@ -27,6 +27,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 from survival_DataManagement import *
 import random
 import numpy as np
+from numpy import exp
 from sklearn.neighbors import KernelDensity
 
 #------------------------------------------------------
