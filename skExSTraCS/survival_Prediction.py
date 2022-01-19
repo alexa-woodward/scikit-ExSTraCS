@@ -101,7 +101,36 @@ class Prediction:
         probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
         self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
       #  return self.survProbDist #is this needed?
+      
+      #----------------------------------------
+      # EDITS FROM 1/18, need to fix
+      #----------------------------------------
 
+      def individualSurvivalProbDist(self,model,population):
+        for ref in population.matchSet:
+            cl = population.popSet[ref]
+            print("classifier; ", cl)
+            if len(cl.coverTimes) > 0: #okay but what IF this is 0?
+                self.matchCoverTimes.append(cl.coverTimes)
+            #else: ??    
+         #idk why it is nesting the list [[xxxxxxx]]
+        print("length of matchCoverTiimes: ",len(self.matchCoverTimes))
+        print("matchCoverTimes: ", self.matchCoverTimes)
+        self.matchCoverTimes = self.matchCoverTimes[0]
+        print(type(self.matchCoverTimes))
+        values = np.asarray([value for value in range(1,int(model.env.formatData.eventList[1]+1))])
+        print("values: ", values)
+ #       empDist = self.matchCoverTimes.reshape(len(self.matchCoverTimes), 1)
+        empDist = np.asarray(sorted(self.matchCoverTimes), dtype=object).reshape((len(self.matchCoverTimes), 1)) #sort the correct times, set as the empricial distribution
+        print("Empirical distributuion: ", empDist)
+        KDEmodel = KernelDensity(bandwidth=4, kernel='epanechnikov')
+        KDEmodel.fit(empDist) #fit the KDE to the empirical distribution
+      
+        self.times = np.asarray([time for time in range(0, int(model.env.formatData.eventList[1]))]).reshape((len(values), 1))
+        probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
+        self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
+        print("predicted individual surv probabilities: ",self.survProbDist)
+        return self.survProbDist 
       
       #1. get coverage from other matched instances. Is this stored anywhere already? If not need to make new function to store these. 
       #2. Use KDE to estimate the PDF
