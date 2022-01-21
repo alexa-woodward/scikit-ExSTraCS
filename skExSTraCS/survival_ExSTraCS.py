@@ -636,9 +636,11 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
 #-----------------------------------------------------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------------------------------------------------  
-    def score(self,X,y): #change this to C-index code
+    def score(self,X,y,z): #change this to C-index code
         predList = self.predict(X)
-        return balanced_accuracy_score(y,predList)
+        getCIndex = ConcordanceIndex(X,y,z,predList)
+        c_index = getCIndex._estimate_concordance_index(y,z,predList,tied_tol=1e-8)
+        return c_index
 
     ##*************** More Evaluation Methods **************** Need to add to this to evaluate survival probability distribution
 #-----------------------------------------------------------------------------------------------------------------
