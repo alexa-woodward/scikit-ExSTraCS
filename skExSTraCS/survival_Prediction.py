@@ -51,7 +51,8 @@ class Prediction:
         #Quick version is to take the centroid of this 'best' span
         #OR - identify any M rules that cover whole 'best' span, and use centroid voting that includes only these rules. 
         if len(population.matchSet) < 1:
-            self.decision = None
+            self.decision = model.env.formatData.eventList[1]/2 #changed this from None because otherwise c-index won't work. Other ideas?
+
         else:
             segmentList = []
             for ref in population.matchSet:
