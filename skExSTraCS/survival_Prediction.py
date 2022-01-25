@@ -103,8 +103,8 @@ class Prediction:
                 instanceTimes = []
                   #within in this, build a decision tree using the matching instances and the specified attributes cl.specifiedAttList 
                 for index in cl.matchingInstances:
-                    instanceStates.append = model.env.formatData.trainFormatted[0][index]  #this should give list of lists 
-                    instanceTimes.append = model.env.formatData.trainFormatted[1][index]
+                    instanceStates.append(model.env.formatData.trainFormatted[0][index])  #this should give list of lists 
+                    instanceTimes.append(model.env.formatData.trainFormatted[1][index])
                 instanceStates = np.array(instanceStates)    #change to np array, should be easier to work with 
                 specifiedStates = instanceStates[:,cl.specifiedAttList] #only keep attributes specified in the rule. 
                 
