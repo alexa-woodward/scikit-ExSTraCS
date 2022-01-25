@@ -91,6 +91,8 @@ class Prediction:
         self.survProbDist = None
         self.times = None
         self.treePreds = []
+        X_state = np.array(X_state)
+        X_state = X_state.reshape(1,-1)
         
         
         if len(population.matchSet) < 1:
@@ -107,6 +109,7 @@ class Prediction:
                     instanceTimes.append(model.env.formatData.trainFormatted[1][index])
                 instanceStates = np.array(instanceStates)    #change to np array, should be easier to work with 
                 specifiedStates = instanceStates[:,cl.specifiedAttList] #only keep attributes specified in the rule. 
+                X_specified = X_state[:,cl.specifiedAttList]
                 
                 #okay, now we should have the two dfs we need, an array of instance states with only the specified attributes and an array of times. Now we can train a decision tree.
                 tree = DecisionTreeRegressor(random_state = 0) 
@@ -114,7 +117,7 @@ class Prediction:
                 tree.fit(specifiedStates, instanceTimes)
                 
                 #predict a new 
-                self.treePreds.append(tree.predict(X_state)) #X_state comes from the predict function in survival_ExSTraCS.py
+                self.treePreds.append(tree.predict(X_specified)) #X_state comes from the predict function in survival_ExSTraCS.py
             print(self.treePreds)    
                 
                 
