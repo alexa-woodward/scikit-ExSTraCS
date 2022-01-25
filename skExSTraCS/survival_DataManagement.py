@@ -229,7 +229,7 @@ class DataManagement:
             shuffled[self.shuffleOrder[instanceIndex]] = formatted[instanceIndex]
         formatted = np.array(shuffled)
 
-        shuffledFeatures = formatted[:,:-1].tolist()
+        shuffledFeatures = formatted[:,:-2].tolist()
         shuffledTimes = formatted[:,self.numAttributes].tolist()
         shuffledStatus = formatted[:,self.numAttributes + 1].tolist()
         #might need to update this, because now the labels are two values 
