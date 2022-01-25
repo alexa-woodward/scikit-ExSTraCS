@@ -117,7 +117,8 @@ class Prediction:
                 tree.fit(specifiedStates, instanceTimes)
                 
                 #predict a new 
-                self.treePreds.append(tree.predict(X_specified)) #X_state comes from the predict function in survival_ExSTraCS.py
+                rule_predict = tree.predict(X_specified)
+                self.treePreds.append(rule_predict[0]) #X_state comes from the predict function in survival_ExSTraCS.py
             print(self.treePreds)    
                 
                 
