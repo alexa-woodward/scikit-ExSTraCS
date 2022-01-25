@@ -106,7 +106,7 @@ class Prediction:
                     instanceStates.append = model.env.formatData.trainFormatted[0][index]  #this should give list of lists 
                     instanceTimes.append = model.env.formatData.trainFormatted[1][index]
                 instanceStates = np.array(instanceStates)    #change to np array, should be easier to work with 
-                specifiedStates = instanceStates[;,cl.specifiedAttList] #only keep attributes specified in the rule. 
+                specifiedStates = instanceStates[:,cl.specifiedAttList] #only keep attributes specified in the rule. 
                 
                 #okay, now we should have the two dfs we need, an array of instance states with only the specified attributes and an array of times. Now we can train a decision tree.
                 tree = DecisionTreeRegressor(random_state = 0) 
