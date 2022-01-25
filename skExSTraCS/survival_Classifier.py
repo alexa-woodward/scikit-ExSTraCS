@@ -23,6 +23,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         self.deletionProb = None
         
         #Individual Survival Prediction -----------------------------------------------
+        self.matchingInstances = [] #for each rule, a list of instance indices that correctly match the rule 
         self.coverTimes = [] #for each rule, a list of eventTimes from instances that were correctly covered 
         
         #Experience Management ---------------------------------------------
@@ -141,6 +142,7 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
                         self.updateError(model,eventTime,eventStatus)
                         self.updateCorrectTimes(eventTime) #appends the eventTime to a list of "correctTimes" for each correctly matched training instance
                         self.updateCorrectCoverage()
+                        self.updateMatchingInstances(instance_index)
                     else: 
                         self.updateIncorrectError()
                 else: #if the instance was censored, append to the correct set IF the interval includes the censoring time or the interval is BEYOND the censoring time
@@ -263,6 +265,14 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
             self.aveMatchSetSize = (self.aveMatchSetSize * (self.matchCount-1)+ matchSetSize) / float(self.matchCount) #update the average to...
         else: #if its not less than 5,
             self.aveMatchSetSize = self.aveMatchSetSize + model.beta * (matchSetSize - self.aveMatchSetSize)
+            
+#----------------------------------------------------------------------------------------------------------------------------
+# updateMatchingInstances: for prediction, keeps a list of instance indicies that a particular rule matches 
+#----------------------------------------------------------------------------------------------------------------------------            
+    def updateMatchingInstances(self,matchingInstance):
+        self.matchingInstances.append(matchingInstance)
+            
+            
 #----------------------------------------------------------------------------------------------------------------------------
 # updateCorrect: updates the correct count for a classifier until all instances have been seen, once epochComplete add to "correctCover" instead. WON'T NEED THIS TO UPDATE CORREXT COUNT (since it only updates if epochComplete = False)
 #---------------------------------------------------------------------------------------------------------------------------- 
