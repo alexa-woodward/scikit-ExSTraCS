@@ -596,7 +596,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         for inst in range(instances):
             state = X[inst]
             self.population.makeEvalMatchSet(self,state)
-            prediction = Prediction(self, self.population)
+            prediction = Prediction(self, self.population,state)
             eventPrediction = prediction.getDecision()
             predList.append(eventPrediction)
             self.population.clearSets()
