@@ -30,11 +30,12 @@ import numpy as np
 from numpy import exp
 from sklearn.neighbors import KernelDensity
 from sklearn.tree import DecisionTreeRegressor
+from statistics import mean
 
 #------------------------------------------------------
 
 class Prediction:
-    def __init__(self,model,population):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
+    def __init__(self,model,population,X_state):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
         """ Constructs the voting array and determines the prediction decision. """
         self.decision = None
         self.survProb = None
@@ -113,10 +114,11 @@ class Prediction:
                 tree.fit(specifiedStates, instanceTimes)
                 
                 #predict a new 
-                self.treePred.append(tree.predict())
+                self.treePred.append(tree.predict(X_state)) #X_state comes from the predict function in survival_ExSTraCS.py
+            print(self.treePred)    
                 
                 
-            self.decision = ???
+            self.decision = mean(self.treePred)
                 
          
             
