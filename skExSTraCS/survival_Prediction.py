@@ -29,6 +29,7 @@ import random
 import numpy as np
 from numpy import exp
 from sklearn.neighbors import KernelDensity
+from sklearn.tree import DecisionTreeRegressor
 
 #------------------------------------------------------
 
@@ -83,6 +84,41 @@ class Prediction:
             besthigh = segmentList[bestRef+1]
             centroid = (bestlow + besthigh) / 2.0
             self.decision = centroid
+            
+        self.decision = None
+        self.survProb = None
+        self.survProbDist = None
+        self.times = None
+        self.treePreds = []
+        
+        
+        if len(population.matchSet) < 1:
+            self.decision = model.env.formatData.eventList[1]/2 #changed this from None because otherwise c-index won't work. Other ideas?
+
+        else:
+            for ref in population.matchSet:
+                cl = population.popSet[ref] 
+                instanceStates = []
+                instanceTimes = []
+                  #within in this, build a decision tree using the matching instances and the specified attributes cl.specifiedAttList 
+                for index in cl.matchingInstances:
+                    instanceStates.append = model.env.formatData.trainFormatted[0][index]  #this should give list of lists 
+                    instanceTimes.append = model.env.formatData.trainFormatted[1][index]
+                instanceStates = np.array(instanceStates)    #change to np array, should be easier to work with 
+                specifiedStates = instanceStates[;,cl.specifiedAttList] #only keep attributes specified in the rule. 
+                
+                #okay, now we should have the two dfs we need, an array of instance states with only the specified attributes and an array of times. Now we can train a decision tree.
+                tree = DecisionTreeRegressor(random_state = 0) 
+                # fit the regressor with THE data
+                tree.fit(specifiedStates, instanceTimes)
+                
+                #predict a new 
+                self.treePred.append(tree.predict())
+                
+                
+            self.decision = ???
+                
+         
             
 #-----------------------------------------------------------------------------------------------------------------
 # individualSurvivalProb: generates the survival probability distribution for a test instance 
