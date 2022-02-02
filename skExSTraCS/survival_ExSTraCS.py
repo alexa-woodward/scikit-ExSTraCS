@@ -627,7 +627,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         for inst in range(instances):
             state = X[inst]
             self.population.makeEvalMatchSet(self,state)
-            prediction = Prediction(self, self.population)
+            prediction = Prediction(self, self.population,state)
             indSurvivalDist = prediction.getSurvProbDist() 
             predList.append(indSurvivalDist) #returns survival probability distribution
             self.population.clearSets()
