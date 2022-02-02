@@ -94,12 +94,12 @@ class Prediction:
         X_state = np.array(X_state)
         X_state = X_state.reshape(1,-1)
         
-        
         if len(population.matchSet) < 1:
             self.decision = model.env.formatData.eventList[1]/2 #changed this from None because otherwise c-index won't work. Other ideas?
 
         else:
             for ref in population.matchSet:
+                i = 0 
                 cl = population.popSet[ref] 
                 instanceStates = []
                 instanceTimes = []
@@ -107,22 +107,25 @@ class Prediction:
                 for index in cl.matchingInstances:
                     instanceStates.append(model.env.formatData.trainFormatted[0][index])  #this should give list of lists 
                     instanceTimes.append(model.env.formatData.trainFormatted[1][index])
-                instanceStates = np.array(instanceStates)    #change to np array, should be easier to work with 
+                instanceStates = np.array(instanceStates)    #change to np array, should be easier to work with
+                print(instanceStates)
                 specifiedStates = instanceStates[:,cl.specifiedAttList] #only keep attributes specified in the rule. 
                 X_specified = X_state[:,cl.specifiedAttList]
                 
                 #okay, now we should have the two dfs we need, an array of instance states with only the specified attributes and an array of times. Now we can train a decision tree.
-                tree = DecisionTreeRegressor(random_state = 0) 
+                tree = DecisionTreeRegressor(random_state = 0, max_depth = 5) #can change max_depth, keeping this for speed purposes for now
                 # fit the regressor with THE data
                 tree.fit(specifiedStates, instanceTimes)
                 
-                #predict a new 
+                #predict a new
                 rule_predict = tree.predict(X_specified)
                 self.treePreds.append(rule_predict[0]) #X_state comes from the predict function in survival_ExSTraCS.py
-            print(self.treePreds)    
-                
-                
-            self.decision = mean(self.treePreds)
+ #           def minmax(val_list):
+ #               min_val = min(val_list)
+ #               max_val = max(val_list)
+ #               return (min_val, max_val)
+            
+        self.decision = mean(self.treePreds)
                 
          
             
