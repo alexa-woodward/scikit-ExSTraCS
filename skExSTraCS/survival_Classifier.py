@@ -164,16 +164,20 @@ class Classifier: #this script is for an INDIVIDUAL CLASSIFIER
         ref = 0
 #         print self.eventRanked
 #         print self.eventList
-        while ref < len(eventRanked):
-            if eventRanked[ref][1]==1:
-                if eventRanked[ref][0] <= self.eventInterval[1] and eventRanked[ref][0] >= self.eventInterval[0]:
-                    count += 1
-                ref += 1
-            else:
-                if eventRanked[ref][0] <= self.eventInterval[0]:
-                    count += 1 * float((self.eventInterval[1]-self.eventInterval[0])/(model.env.formatData.eventList[1] - eventRanked[ref][0]))
-                ref += 1
-        self.event_RP = count/float(model.env.formatData.numTrainInstances)
+        if self.eventInterval[0] >= self.eventInterval[1]:
+                self.event_RP = 0
+        else:        
+            while ref < len(eventRanked):
+                if eventRanked[ref][1]==1:
+                    if eventRanked[ref][0] <= self.eventInterval[1] and eventRanked[ref][0] >= self.eventInterval[0]:
+                        count += 1
+                    ref += 1
+                else:
+                    if eventRanked[ref][0] <= self.eventInterval[0]:
+                        count += 1 * float((self.eventInterval[1]-self.eventInterval[0])/(model.env.formatData.eventList[1] - eventRanked[ref][0]))
+                        #print("eventInterval[0]: ", self.eventInterval[0], "eventInterval[1]: ", self.eventInterval[1], "eventList[1]: ", model.env.formatData.eventList[1], "eventRanked[ref][0]: ",eventRanked[ref][0])
+                    ref += 1
+            self.event_RP = count/float(model.env.formatData.numTrainInstances)
             
                 
 #----------------------------------------------------------------------------------------------------------------------------
