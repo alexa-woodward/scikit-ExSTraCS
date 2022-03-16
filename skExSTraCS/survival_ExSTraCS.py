@@ -2,15 +2,18 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import recall_score
 import numpy as np
-from skExSTraCS.survival_Timer import Timer
-from skExSTraCS.survival_OfflineEnvironment import OfflineEnvironment
-from skExSTraCS.survival_ExpertKnowledge import ExpertKnowledge
-from skExSTraCS.survival_AttributeTracking import AttributeTracking
-from skExSTraCS.survival_ClassifierSet import ClassifierSet
-from skExSTraCS.survival_Prediction import Prediction
-from skExSTraCS.survival_RuleCompaction import RuleCompaction
-from skExSTraCS.survival_IterationRecord import IterationRecord
-from skExSTraCS.survival_Pareto import Pareto
+from survival_Timer import Timer
+from survival_OfflineEnvironment import OfflineEnvironment
+from survival_ExpertKnowledge import ExpertKnowledge
+from survival_AttributeTracking import AttributeTracking
+from survival_ClassifierSet import ClassifierSet
+from survival_Prediction import Prediction
+from survival_RuleCompaction import RuleCompaction
+from survival_IterationRecord import IterationRecord
+from survival_Pareto import Pareto
+from survival_Metrics import Metrics
+from matplotlib import pyplot as plt
+
 import copy
 import time
 import pickle
@@ -490,7 +493,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         self.population.deletion(self)
 
         self.trackingObj.macroPopSize = len(self.population.popSet)
-        self.trackingObj.microPopSize = self.population.microPopSize
+        self.trackingObj.microPopSize = self.population.microPopSize    
         self.trackingObj.matchSetSize = len(self.population.matchSet)
         self.trackingObj.correctSetSize = len(self.population.correctSet)
         self.trackingObj.avgIterAge = self.population.getInitStampAverage()
@@ -600,10 +603,10 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
             eventPrediction = prediction.getDecision()
             predList.append(eventPrediction)
             self.population.clearSets()
-        return np.array(predList)
+        return np.array(predList)  #prediction.plotPredResults(predList), to plot, np.array(predList), to array
 
 #-----------------------------------------------------------------------------------------------------------------
-#
+# predict_proba:
 #-----------------------------------------------------------------------------------------------------------------      
             
     def predict_proba(self, X): # change this to call getSurvProb survivalPrediction = prediction.getSurvProb() 
@@ -627,22 +630,53 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         for inst in range(instances):
             state = X[inst]
             self.population.makeEvalMatchSet(self,state)
-            prediction = Prediction(self, self.population,state)
-            indSurvivalDist = prediction.getSurvProbDist() 
+            prediction = Prediction(self, self.population, state)
+            indSurvivalDist = prediction.individualSurvivalProbDist(model,self.population) 
             predList.append(indSurvivalDist) #returns survival probability distribution
             self.population.clearSets()
         return np.array(predList)
 
 #-----------------------------------------------------------------------------------------------------------------
-#
+# plotPreds
+
+#-----------------------------------------------------------------------------------------------------------------  
+    def plotPreds(self,predList):
+        prediction = Prediction(self, self.population, state)
+        return prediction.plotPredResults(predList)
+
+#-----------------------------------------------------------------------------------------------------------------
+# score: returns c_index
 #-----------------------------------------------------------------------------------------------------------------  
     def score(self,X,y,z): #change this to C-index code
         predList = self.predict(X)
-        getCIndex = ConcordanceIndex(X,y,z,predList)
+        getCIndex = Metrics(X,y,z,predList)
         c_index = getCIndex._estimate_concordance_index(y,z,predList,tied_tol=1e-8)
         return c_index
 
-    ##*************** More Evaluation Methods **************** Need to add to this to evaluate survival probability distribution
+
+#-----------------------------------------------------------------------------------------------------------------
+# brier_score: returns integrated brier scores across all time points, accounting for censoring
+#-----------------------------------------------------------------------------------------------------------------  
+    def brier_score(self,X,p,q,y,z): #X is dataFeatures_test,  p = dataEventStatus_test, q = dataEventTimes_test,y = dataEvents_train, z = dataEvents_test
+        predList = self.predict(X)
+        predProbs = self.predict_proba(X)
+        predProbs = predProbs[:,min(q):max(q)] #keeps only the columns for times present in dataEventTimes_test
+        times = np.arange(min(q),max(q))
+        getBrierScore = Metrics(X,p,q,y,z,predList,predProbs)
+        times, b_scores = getBrierScore._brier_score(y,z,predProbs,times)
+        return times, b_scores
+
+#-----------------------------------------------------------------------------------------------------------------
+# plot_ibs:
+#-----------------------------------------------------------------------------------------------------------------  
+    def plot_ibs(self, times, b_scores):
+        plt.figure(figsize=(10, 10))
+        #pyplot.vlines(empDist, 0, 0.05, linestyles ="solid", colors ="k")
+        pyplot.xlabel('Time')
+        pyplot.ylabel('Brier score')
+        
+        pyplot.plot(times, b_scores)
+
 #-----------------------------------------------------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------------------------------------------------  
