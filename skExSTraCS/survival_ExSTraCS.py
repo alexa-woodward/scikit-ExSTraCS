@@ -667,7 +667,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         return times, b_scores
 
 #-----------------------------------------------------------------------------------------------------------------
-# plot_ibs:
+# plot_ibs: Plots the average brier scores over each time point.
 #-----------------------------------------------------------------------------------------------------------------  
     def plot_ibs(self, times, b_scores):
         plt.figure(figsize=(10, 10))
@@ -676,6 +676,45 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
         pyplot.ylabel('Brier score')
         
         pyplot.plot(times, b_scores)
+
+#-----------------------------------------------------------------------------------------------------------------
+# plotKM: Plots the kaplan meier survival probabilities for top k features
+#----------------------------------------------------------------------------------------------------------------- 
+    def plotKM(self, dataFeatures, dataEvents, dataHeaders, k): #k is how many attributes to plot, dataFeatures could be drawn from elsewhere
+
+        #First, format the events df
+        dataEvents = pd.DataFrame(dataEvents, columns=[timeLabel, censorLabel]) 
+        dataEvents[censorLabel] = dataEvents[censorLabel].astype(bool)
+        dataEvents = dataEvents.values
+        
+        #switch column order
+        dataEvents[:, [1, 0]] = dataEvents[:, [0, 1]]
+        #format for sksurv
+        dataEvents = np.core.records.fromarrays(dataEvents.transpose(),names='cens, time', formats = '?, <f8')
+
+        dataFeatures = pd.DataFrame(dataFeatures, columns = dataHeaders)
+
+
+        attSums = self.AT.getSumGlobalAttTrack(self)
+
+        #get the index of the top k attribute sums
+        topAttIndex = sorted(range(len(attSums)), key=lambda i: attSums[i])[-k:] #this will be a list of indices
+        
+        #next, need to grab only those features from the dataset
+        topFeat = dataFeatures.iloc[:,topAttIndex] #a df with only the selected features
+
+        for col in topFeat:
+            for snp in (0,1,2):
+                mask_snp = dataFeatures[col] == snp
+                time_snp, survival_prob_snp = kaplan_meier_estimator(dataEvents['cens'][mask_snp], dataEvents['time'][mask_snp])
+
+                plt.step(time_snp, survival_prob_snp, where="post",label="Genotype = %s" % snp)
+
+            plt.ylabel("est. probability of survival $\hat{S}(t)$")
+            plt.xlabel("time $t$")
+            plt.legend(loc="best")
+            plt.title("Survival stratified by %s" % col)
+            plt.show()
 
 #-----------------------------------------------------------------------------------------------------------------
 #
