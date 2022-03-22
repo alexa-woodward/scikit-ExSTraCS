@@ -28,6 +28,9 @@ from survival_DataManagement import *
 import random
 import numpy as np
 from numpy import exp
+import itertools
+from matplotlib import pyplot
+
 from sklearn.neighbors import KernelDensity
 from sklearn.tree import DecisionTreeRegressor
 from statistics import mean
@@ -35,7 +38,7 @@ from statistics import mean
 #------------------------------------------------------
 
 class Prediction:
-    def __init__(self,model,population,X_state):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
+    def __init__(self, model,population,X_state):  #now takes in population ( have to reference the match set to do prediction)  pop.matchSet
         """ Constructs the voting array and determines the prediction decision. """
         self.decision = None
         self.survProb = None
@@ -86,49 +89,6 @@ class Prediction:
             centroid = (bestlow + besthigh) / 2.0
             self.decision = centroid
             
-        self.decision = None
-        self.survProb = None
-        self.survProbDist = None
-        self.times = None
-        self.treePreds = []
-        X_state = np.array(X_state)
-        X_state = X_state.reshape(1,-1)
-        
-        if len(population.matchSet) < 1:
-            self.decision = model.env.formatData.eventList[1]/2 #changed this from None because otherwise c-index won't work. Other ideas?
-
-        else:
-            for ref in population.matchSet:
-                i = 0 
-                cl = population.popSet[ref] 
-                instanceStates = []
-                instanceTimes = []
-                  #within in this, build a decision tree using the matching instances and the specified attributes cl.specifiedAttList 
-                for index in cl.matchingInstances:
-                    instanceStates.append(model.env.formatData.trainFormatted[0][index])  #this should give list of lists 
-                    instanceTimes.append(model.env.formatData.trainFormatted[1][index])
-                instanceStates = np.array(instanceStates)    #change to np array, should be easier to work with
-                print(instanceStates)
-                specifiedStates = instanceStates[:,cl.specifiedAttList] #only keep attributes specified in the rule. 
-                X_specified = X_state[:,cl.specifiedAttList]
-                
-                #okay, now we should have the two dfs we need, an array of instance states with only the specified attributes and an array of times. Now we can train a decision tree.
-                tree = DecisionTreeRegressor(random_state = 0, max_depth = 5) #can change max_depth, keeping this for speed purposes for now
-                # fit the regressor with THE data
-                tree.fit(specifiedStates, instanceTimes)
-                
-                #predict a new
-                rule_predict = tree.predict(X_specified)
-                self.treePreds.append(rule_predict[0]) #X_state comes from the predict function in survival_ExSTraCS.py
- #           def minmax(val_list):
- #               min_val = min(val_list)
- #               max_val = max(val_list)
- #               return (min_val, max_val)
-            
-        self.decision = mean(self.treePreds)
-                
-         
-            
 #-----------------------------------------------------------------------------------------------------------------
 # individualSurvivalProb: generates the survival probability distribution for a test instance 
 #----------------------------------------------------------------------------------------------------------------- 
@@ -148,14 +108,17 @@ class Prediction:
             self.times = np.asarray([time for time in range(0, int(model.env.formatData.eventList[1]))]).reshape((len(values), 1))
             probabilities = exp(KDEmodel.score_samples(self.times)) #generate probabilities from the fitted model for each time point
             self.survProbDist = 1 - np.cumsum(probabilities) #1-integral(pdf) = 1-CDF = survival probs!
-            print("predicted inidividual survival dist: ",self.survProbDist)
-
+            #print("predicted inidividual survival dist: ",self.survProbDist)
+ #           pyplot.plot(values[:], self.survProbDist)
+ #           pyplot.show()
         else: print("No matching rules exist, cannot predict survival distribution") 
-          
+        
+        return self.survProbDist 
+       
+      
       #1. get coverage from other matched instances. Is this stored anywhere already? If not need to make new function to store these. 
       #2. Use KDE to estimate the PDF
       #3. Use: survival = 1 - np.cumsum(probabilities) to retrieve the survival probabilities
-
 
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -202,3 +165,18 @@ class Prediction:
         pyplot.ylabel('survival probabilty')
         
         pyplot.plot(self.times[:], survProb)
+
+#-----------------------------------------------------------------------------------------------------------------
+# plotPredResults: plots a histogram of the prediction results 
+#-----------------------------------------------------------------------------------------------------------------  
+    def plotPredResults(self, predList):
+
+        plt.figure(figsize=(10, 10))
+        plt.xlabel('Event Prediction', fontsize=14)
+        plt.ylabel('# of Instances', fontsize=14)
+
+        return plt.hist(x=predList, bins='auto', color='#0504aa',
+                            alpha=0.7, rwidth=0.85)
+                
+
+ 
