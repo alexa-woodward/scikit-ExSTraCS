@@ -20,17 +20,17 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from .AttributeTracking import AttributeTracking
-from .Classifier import Classifier
-from .ClassifierSet import ClassifierSet
-from .DataManagement import DataManagement
-from .ExpertKnowledge import ExpertKnowledge
-from .ExSTraCS import ExSTraCS
-from .IterationRecord import IterationRecord
-from .OfflineEnvironment import OfflineEnvironment
-from .Prediction import Prediction
-from .RuleCompaction import RuleCompaction
-from .StringEnumerator import StringEnumerator
-from .Timer import Timer
+from .survival_AttributeTracking import AttributeTracking
+from .survival_Classifier import Classifier
+from .survival_ClassifierSet import ClassifierSet
+from .survival_DataManagement import DataManagement
+from .survival_ExpertKnowledge import ExpertKnowledge
+from .survival_ExSTraCS import ExSTraCS
+from .survival_IterationRecord import IterationRecord
+from .survival_OfflineEnvironment import OfflineEnvironment
+from .survival_Prediction import Prediction
+from .survival_RuleCompaction import RuleCompaction
+from .survival_StringEnumerator import StringEnumerator
+from .survival_Timer import Timer
 from .survival_Pareto import Pareto
 from .survival_Metrics import Metrics
