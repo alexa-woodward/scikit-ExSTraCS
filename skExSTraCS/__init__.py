@@ -32,3 +32,5 @@ from .Prediction import Prediction
 from .RuleCompaction import RuleCompaction
 from .StringEnumerator import StringEnumerator
 from .Timer import Timer
+from .survival_Pareto import Pareto
+from .survival_Metrics import Metrics
