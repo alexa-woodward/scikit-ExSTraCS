@@ -660,7 +660,7 @@ class ExSTraCS(BaseEstimator,ClassifierMixin):
     def brier_score(self,X,p,q,y,z): #X is dataFeatures_test,  p = dataEventStatus_test, q = dataEventTimes_test,y = dataEvents_train, z = dataEvents_test
         predList = self.predict(X)
         predProbs = self.predict_proba(X)
-        predProbs = predProbs[:,min(q):max(q)] #keeps only the columns for times present in dataEventTimes_test
+        predProbs = predProbs[:,min(q):1+max(q)] #keeps only the columns for times present in dataEventTimes_test
         times = np.arange(min(q),max(q))
         getBrierScore = Metrics(X,p,q,y,z,predList,predProbs)
         times, b_scores = getBrierScore._brier_score(y,z,predProbs,times)
